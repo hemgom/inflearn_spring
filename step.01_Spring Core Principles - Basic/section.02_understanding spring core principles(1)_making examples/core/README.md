@@ -36,4 +36,22 @@
 ![img_2.png](img/img_2.png)
 
 
-- 회원 서비스 : __MemberServicelmpl__
+- 회원 서비스 : __MemberServiceImpl__
+
+### 03. 회원 도메인 개발
+- `enum Grade` : 회원등급 종류 명시`(일반 = 'BASIC', 'VIP')`
+- `class Member` : 회원 정보 엔티티`('id', 'name', 'grade')`
+- `interface MemberRepository` : 회원 저장소 인터페이스`(회원정보 저장 및 검색)`
+  - `class MemoryMemberRepository` : 회원 저장소 구현체(임시, DB 확정 전)
+- `interface MemberService` : 회원 서비스 인터페이스`(회원 가입 및 조회)`
+  - `class MemberServiceImpl` : 저장소 구현체인 `MemoryMemberRepository`에 `회원 정보를 저장`하고 저장 된 `회원 정보를 검색`하는 기능을 구현
+
+
+- 현재 상황은 아직 DB가 확정되지 않은 경우를 가정한다. 
+  - 개발 진행을 위해서 가장 단순한 `MemoryMemberRepository`를 구현해 진행한다.
+
+
+- `참고(1)` : `HashMap`은 `동시성 이슈`가 발생할 수 있으므로 실무에선 `ConcurrentHashMap`을 사용한다.
+  - 해당 강의에선 추가 설명이 길어질 것을 염려해 부득이하게 `HashMap`을 사용했다.
+- `참고(2)` : 인터페이스 구현체 이름 작성시 관례상 `implements`의 줄임말인 `impl`을 인터페이스명 뒤에 더해 사용함
+  - ex) `interface MemberService`의 구현체일 경우 = `MemberServiceImpl`
