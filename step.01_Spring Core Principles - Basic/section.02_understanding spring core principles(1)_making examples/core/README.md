@@ -124,4 +124,9 @@
   - `class FixDiscountPolicy` : 고정 할인 정책을 구현, 할인 금액을 설정 및 회원 등급에 따라 할인 가능한 금액을 반환
 - `class Order` : 주문 엔티티`('memberId', 'itemName', 'itemPrice', 'discountPrice')`
 - `interface OrderService` : 주문 생성시 `회원 id` `상품명` `상품가격` 정보의 필요성 명시
-  - `class OrderServiceImpl` : 주문 생성 요청시 `회원 번호를 조회`하고 `할인 정책`을 적용한 후 주문 객체를 생성해 반환
+  - `class OrderServiceImpl` : 주문 생성 요청시 `회원 번호를 조회`하고 `할인 정책`을 적용한 후 주문 객체를 생성해 반환  
+<br/><br/><br/>
+
+### 07. 주문과 할인 도메인 실행과 테스트
+- `class OrderApp` : 회원 가입을하고 회원 id를 통해 확인한 할인 금액을 출력한다.
+- `class OrderServiceTest` : `OrderService`의 테스트코드 작성
