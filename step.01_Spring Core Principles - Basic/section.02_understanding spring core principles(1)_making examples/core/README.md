@@ -25,15 +25,15 @@
 
 
 - 회원 도메인 협력 관계
-![img.png](img.png)
+![img.png](img/img.png)
 
 
 - 회원 클래스 다이어그램
-![img_1.png](img_1.png)
+![img_1.png](img/img_1.png)
 
 
 - 회원 객체 다이어그램
-![img_2.png](img_2.png)
+![img_2.png](img/img_2.png)
 
 
 - 회원 서비스 : __MemberServicelmpl__
