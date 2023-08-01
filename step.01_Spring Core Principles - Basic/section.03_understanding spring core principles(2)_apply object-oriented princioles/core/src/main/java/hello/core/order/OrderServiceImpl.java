@@ -7,7 +7,7 @@ import hello.core.member.MemoryMemberRepository;
 
 public class OrderServiceImpl implements OrderService {
 
-    private final MemberRepository memberRepository = new MemoryMemberRepository();
+    private final MemberRepository memberRepository;
     
     // 새로운 할인 정책을 적용할 경우 아래의 코드를 사용함
     // private final DiscountPolicy discountPolicy = new FixDiscountPolicy();
@@ -15,6 +15,11 @@ public class OrderServiceImpl implements OrderService {
     // 의존성을 줄이기 위해 아래의 코드를 사용함
     // private final DiscountPolicy discountPolicy = new RateDiscountPolicy();
     private  final DiscountPolicy discountPolicy;
+
+    public OrderServiceImpl(MemberRepository memberRepository, DiscountPolicy discountPolicy) {
+        this.memberRepository = memberRepository;
+        this.discountPolicy = discountPolicy;
+    }
 
     @Override
     public Order createOrder(Long memberId, String itemName, int itemPrice) {
