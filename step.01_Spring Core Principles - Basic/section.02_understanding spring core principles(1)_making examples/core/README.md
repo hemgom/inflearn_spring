@@ -116,4 +116,12 @@
 - 주문 도메인 객체 다이어그램(2)
 ![img_7.png](img/img_7.png)
 회원을 메모리가 아닌 실체 DB에서 조회, 정률 할인 정책(주문 금액에 따른 %할인)을 지원해도 주문 서비스 변경 불필요  
-협력 관계를 그대로 사용 가능함
+협력 관계를 그대로 사용 가능함  
+<br/><br/><br/>
+
+### 06. 주문과 할인 도메인 개발
+- `interface DiscountPolicy` : 할인 금액 결과를 도출하기 위해 `회원 정보`와 `주문 금액`이 필요함을 명시
+  - `class FixDiscountPolicy` : 고정 할인 정책을 구현, 할인 금액을 설정 및 회원 등급에 따라 할인 가능한 금액을 반환
+- `class Order` : 주문 엔티티`('memberId', 'itemName', 'itemPrice', 'discountPrice')`
+- `interface OrderService` : 주문 생성시 `회원 id` `상품명` `상품가격` 정보의 필요성 명시
+  - `class OrderServiceImpl` : 주문 생성 요청시 `회원 번호를 조회`하고 `할인 정책`을 적용한 후 주문 객체를 생성해 반환
