@@ -139,4 +139,38 @@ class MemberServiceTest {
 
 ### 정리
 - `AppConfig`를 통해서 역할을 명확하게 분리함
-- 클라이언트는 `추상(인터페이스)`에만 의존하면 되고 `구체 클래스`는 `AppConfig`가 생성 및 주입을 담당하게 됨
+- 클라이언트는 `추상(인터페이스)`에만 의존하면 되고 `구체 클래스`는 `AppConfig`가 생성 및 주입을 담당하게 됨  
+<br/>
+
+## 04. AppConfig 리팩터링
+- 현재 상황에서 `AppConfig`는 `중복`이 존재하고 `역할`에 따른 `구현`이 잘 보이지 않는다.  
+<br/>
+
+### 기대하는 그림
+![img_7.png](img_7.png)  
+<br/>
+
+### 리팩터링 후
+- 중복을 제거하고 역할에 따른 구현이 잘 보이도록 리팩터링을 진행하였다.
+```
+public class AppConfig {
+
+    public MemberService memberService() {
+        return new MemberServiceImpl(memberRepository());
+    }
+
+    private MemoryMemberRepository memberRepository() {
+        return new MemoryMemberRepository();
+    }
+
+    public OrderService orderService() {
+        return new OrderServiceImpl(memberRepository(), discountPolicy());
+    }
+
+    public DiscountPolicy discountPolicy() {
+        return new FixDiscountPolicy();
+    }
+}
+```
+- 이로서 `AppConfig`의 전체 구성이 어떤지 빠르게 파악할 수 있게 되었다!
+- 또한 `MemoryMemberRepository` `FixDiscountPolicy`를 변경 시 해당 메서드만 바꾸면 된다는 장점도 생겼다!
