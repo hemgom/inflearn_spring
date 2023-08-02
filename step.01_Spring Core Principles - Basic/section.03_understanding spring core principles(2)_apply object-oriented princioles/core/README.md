@@ -140,7 +140,7 @@ class MemberServiceTest {
 ### 정리
 - `AppConfig`를 통해서 역할을 명확하게 분리함
 - 클라이언트는 `추상(인터페이스)`에만 의존하면 되고 `구체 클래스`는 `AppConfig`가 생성 및 주입을 담당하게 됨  
-<br/>
+<br/><br/><br/>
 
 ## 04. AppConfig 리팩터링
 - 현재 상황에서 `AppConfig`는 `중복`이 존재하고 `역할`에 따른 `구현`이 잘 보이지 않는다.  
@@ -173,4 +173,35 @@ public class AppConfig {
 }
 ```
 - 이로서 `AppConfig`의 전체 구성이 어떤지 빠르게 파악할 수 있게 되었다!
-- 또한 `MemoryMemberRepository` `FixDiscountPolicy`를 변경 시 해당 메서드만 바꾸면 된다는 장점도 생겼다!
+- 또한 `MemoryMemberRepository` `FixDiscountPolicy`를 변경 시 해당 메서드만 바꾸면 된다는 장점도 생겼다!  
+<br/><br/><br/>
+
+## 05. 새로운 구조와 할인 정책 적용
+- 이전으로 돌아가서 `정액 할인 정책`을 `정률 % 할인 정책`으로 변경해보자
+- `FixDiscountPolicy` -> `RateDiscountPolicy`
+- 과연 어떤 부분을 변경해야 할까?
+  - 현재 `AppConfig`의 등장으로 애플리케이션은 `사용 영역`과 `객체 생성 및 구성 영역`으로 분리된 상태이다.
+<br/>
+
+### 현재 사용과 구성의 분리 
+![img_8.png](img_8.png)  
+
+
+### 할인 정책의 변경
+![img_9.png](img_9.png)
+- 특정 구체 클래스를 변경해도 구성 영역에만 영향이 있을 뿐 사용 영역에는 전혀 영향이 가지 않는다!  
+<br/>
+
+### 할인 정책 변경에 따른 코드 수정
+```
+public DiscountPolicy discountPolicy() {
+  // return new FixDiscountPolicy(); (변경 전 코드)
+  // 할인 정책 변경에 따른 구체 클래스 변경
+  return new RateDiscountPolicy();
+}
+```
+- 추후에 할인 정책을 또 변경하더라도 `AppConfig`만 수정하면 된다!
+- `AppConfig` 등장 전 처럼 클라이언트 코드인 `OrderServiceImpl`를 비롯한 어떤 `사용영역` 코드도 변경할 필요가 없어졌다!  
+<br/>
+
+### 이로써 DIP와 OCP 모두를 잡을 수 있게 되었다!
