@@ -103,4 +103,23 @@ __4. 스프링 빈 의존관계 설정 - 완료__
   - `getBean()`을 사용해 타입만 지정해 스프링 빈을 조회할 경우 `NoUniqueBeanDefinitionException` 예외가 발생한다
   - 이는 둘 중 어떤 스프링 빈을 반환해야 할 지 몰라서 생기는 예외이다.
 - `findBeanByName()` : `getBean()`을 사용할 때 타입 중복으로 생기는 문제점을 해결하려면 타입뿐만 아니라 스프링 빈 이름도 지정해준다.
-- `findAllBeanByType()` : 특정 타입의 모든 스프링 빈을 조회하고 싶다면 `getBeansOfType()`을 사용한다.
+- `findAllBeanByType()` : 특정 타입의 모든 스프링 빈을 조회하고 싶다면 `getBeansOfType()`을 사용한다.  
+<br/><br/><br/>
+
+## 05. 스프링 빈 조회 - 상속 관계
+- 부모 타입을 조회시 자식 타입도 함께 조회한다.
+  - 그래서 자바 객체 중 최상위 타입의 `Object` 타입을 조회하면 모든 스프링 빈을 조회함  
+<br/>
+
+__설명 예시 그림__
+![img_4.jpg](img_4.jpg)  
+<br/>
+
+### 예제 코드 - ApplicationContextExtendsFindTest
+- `findBeanByParentTypeDuplicate()` : `getBean()`을 사용해 부모 타입으로 조회시 자식이 둘 이상 있다면 예외가 발생한다.
+  - 타입으로만 조회시 `getBean()`을 사용했는데 같은 타입의 스프링 빈이 두 개 이상 있는 것과 같은 이유
+- `findBeanByParentTypeBeanName()` : 부모 타입 지정뿐아니라 조회하고자 하는 스프링 빈의 이름도 지정하면 해결된다.
+- `findBeanBySubType()` : 특정 하위 타입으로 조회해도 되긴 하나 도긴개긴이다.
+  - 특정 하위 타입을 가지는 스프링 빈이 2개 이상 있다면...
+- `findBeanByParentType()` : `getBeansOfType()`을 사용해 부모 타입으로 조회하면 부모 타입은 물론 하위 타입의 모든 스프링 빈이 조회된다.
+- `findBeanByObjectType()` : 최상위 타입인 `Object`로 조회하면 모든 스프링 빈이 조회된다.
