@@ -122,4 +122,39 @@ __설명 예시 그림__
 - `findBeanBySubType()` : 특정 하위 타입으로 조회해도 되긴 하나 도긴개긴이다.
   - 특정 하위 타입을 가지는 스프링 빈이 2개 이상 있다면...
 - `findBeanByParentType()` : `getBeansOfType()`을 사용해 부모 타입으로 조회하면 부모 타입은 물론 하위 타입의 모든 스프링 빈이 조회된다.
-- `findBeanByObjectType()` : 최상위 타입인 `Object`로 조회하면 모든 스프링 빈이 조회된다.
+- `findBeanByObjectType()` : 최상위 타입인 `Object`로 조회하면 모든 스프링 빈이 조회된다.  
+<br/><br/><br/>
+
+## 06. BeanFactory와 ApplicationContext
+![img_5.jpg](img_5.jpg)  
+<br/>
+
+### BeanFactory
+- 스프링 컨테이너의 최상위 인터페이스
+- 스프링 빈을 관리, 조회하는 역할
+- `getBean()` 제공
+- 지금까지 예제를 통해 다룬 대부분의 기능은 `BeanFactory`가 제공하는 기능  
+<br/>
+
+### ApplicationContext
+- `BeanFactory`의 기능을 모두 상속 받아 제공함
+- 애플리케이션 개발시 기본 기능은 물론 많은 부가기능을 필요로하는데, 이 부가기능을 제공함  
+<br/>
+
+### ApplicationContext가 제공하는 부가기능
+![img_6.jpg](img_6.jpg)
+- 메시지소스를 활용한 국제화 기능
+  - 예를 들면 한국에서 들어오면 한국어, 영어권에서 들어오면 영어를 출력
+- 환경변수
+  - 로컬, 개발, 운영등을 구분해서 처리
+- 애플리케이션 이벤트
+  - 이벤트를 발행하고 구독하는 모델을 편리하게 지원
+- 편리한 리소스 조회
+  - 파일, 클래스패스, 외부 등에서 리소스를 편하게 조회  
+<br/>
+
+### 정리
+- `ApplicationContext`는 `BeanFactory`를 상속 받음
+  - `ApplicationContext`의 경우 `빈 관리 기능 + 편리한 부가 기능`을 제공
+  - 부가기능까지 제공하는 `ApplicationContext`가 있기에 `BeanFactory`를 사용할 일은 거의 없음
+- `BeanFacotry` `ApplicationContext`를 `스프링 컨테이너`라고 함
