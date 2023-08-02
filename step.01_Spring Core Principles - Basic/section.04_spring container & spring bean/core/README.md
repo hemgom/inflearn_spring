@@ -157,4 +157,27 @@ __설명 예시 그림__
 - `ApplicationContext`는 `BeanFactory`를 상속 받음
   - `ApplicationContext`의 경우 `빈 관리 기능 + 편리한 부가 기능`을 제공
   - 부가기능까지 제공하는 `ApplicationContext`가 있기에 `BeanFactory`를 사용할 일은 거의 없음
-- `BeanFacotry` `ApplicationContext`를 `스프링 컨테이너`라고 함
+- `BeanFacotry` `ApplicationContext`를 `스프링 컨테이너`라고 함  
+<br/><br/><br/>
+
+## 07. 다양한 실전 형식 지원 - 자바 코드, XML
+스프링 컨테이너는 다양한 형식의 설정 정보를 수용할 수 있는 유연한 설계를 가지고 있다.
+- 자바 코드, XML, Groovy 등  
+<br/>
+
+![img_7.jpg](img_7.jpg)  
+<br/>
+
+### 애노테이션 기반 자바 코드 설정 사용
+- 현재까지 강의를 따라오면서 사용한 방식 : `new AnnotationConfigApplicationContext(AppConfig.class)`
+- `AnnotationConfigApplicationContext`클래스를 사용해 자바 코드로 이루어진 설정 정보를 넘김  
+<br/>
+
+### XML 설정 사용
+- 최근 스프링 부트를 많이 사용하면서 해당 설정 방식은 잘 사용하지 않음
+- 하지만, 아직 많은 레거시 프로젝트가 `XML`로 되어 있기도 하고 `컴파일 없이 빈 설정 정보를 변경 가능`하기에 한 번쯤 배워는 것도 좋음
+- `enericXmlApplicationContext`를 사용해 `XML`설정 파일을 넘김  
+<br/>
+
+### XML 기반의 스프링 빈 설정 정보 - src/main/resources/appConfig.xml
+- `appConfig.xml` 스프링 설정 정보와 `AppConfig.java` 설정 정보를 비교해보면 거의 비슷함
