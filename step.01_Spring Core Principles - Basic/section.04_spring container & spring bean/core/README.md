@@ -66,4 +66,25 @@ __4. 스프링 빈 의존관계 설정 - 완료__
   - 스프링 내부에서 사용하는 빈 제외 본인이 직접 등록한 빈만 출력
   - `getRole()` : 스프링 내부에서 사용하는 빈을 구분
     - `ROLE_APPLICATION` : 일반적으로 사용자가 정의한 빈
-    - `ROLE_INFRASTRUCTURE` : 스프링이 내부에서 사용하는 빈
+    - `ROLE_INFRASTRUCTURE` : 스프링이 내부에서 사용하는 빈  
+<br/><br/><br/>
+
+## 03. 스프링 빈 조회 - 기본
+### 스프링 컨테이너에서 스프링 빈을 찾는 가장 기본적이 방법
+- `getBean(빈 이름, 타입)` `getBean(타입)`
+- 조회 대상 스프링 빈이 없을 경우 예외 발생!
+  - ex) `NoSuchBeanDefinitionException: No bean named 'xxxxx' available`  
+<br/>
+
+- `Tip!` : 코드 작성 시 `ctrl + e`를 사용하면 이전에 작성하던 코드로 이동이 가능하다!  
+<br/>
+
+### 예제 코드 - ApplicationContextBasicFindTest
+- `findBeanName()`: 빈 이름과 타입으로 조회
+  - `MemberService.class` 타입의 `"memberService"`란 이름을 가진 빈을 조회 후 변수에 저장
+  - 변수에 저장된 빈이 `MemberServiceImpl`의 인스턴스인지 확인
+- `findBeanByType()` : 빈의 타입으로만 조회
+- `findBeanName2()` : 인스턴스가 아닌 구현 클래스 타입으로 조회
+  - 이와 같은 방법은 구현 클래스의 변경에 영향을 받으므로 유연성이 떨어져 좋지 않음
+- `findBeanNameX()` : 빈의 이름이 없는 확인(있다면 테스트 실패, 없다면 테스트 성공)
+  - 람다식을 사용하여 빈 이름을 조회할 때 `NoSuchBeanDefinitionException` 발생하는지 확인
