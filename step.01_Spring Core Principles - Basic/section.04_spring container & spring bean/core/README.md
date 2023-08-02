@@ -17,14 +17,14 @@ ApplicationContext applicationContext =
 
 ### 스프링 컨테이너의 생성 과정
 __1. 스프링 컨테이너 생성__
-![img.jpg](img.jpg)
+![img.jpg](img/img.jpg)
 - 컨테이너 생성 : `new AnnotationConfigApplicationContext(AppConfig.class)`
 - 생성 시 `구성 정보`를 지정해주어야 함
   - 예시 그림에서는 `AppConfig.class`를 구성 정보로 지정함  
 <br/>
 
 __2. 스프링 빈 등록__
-![img_1.jpg](img_1.jpg)
+![img_1.jpg](img/img_1.jpg)
 - 스프링 컨테이너는 파라미터로 넘어온 설정 클래스 정보를 사용해 스프링 빈을 등록함
 - 빈 이름의 경우 `메서드 명`을 사용하며 직접 부여도 가능함
   - 직접 부여할 경우 : `@Bean(name = "memberService2")`  
@@ -34,11 +34,11 @@ __2. 스프링 빈 등록__
 <br/>
 
 __3. 스프링 빈 의존관계 설정 준비__
-![img_2.jpg](img_2.jpg)  
+![img_2.jpg](img/img_2.jpg)  
 <br/>
 
 __4. 스프링 빈 의존관계 설정 - 완료__
-![img_3.jpg](img_3.jpg)
+![img_3.jpg](img/img_3.jpg)
 - 스프링 컨테이너는 설정 정보를 참고해 `의존관계 주입(DI)`을 함
 - 어찌보면 자바 코드를 호출하는 것 처럼 보이나 분명한 차이가 존재하며 후에 `싱글톤 컨테이너`에서 다룰려고 한다.  
 <br/>
@@ -112,7 +112,7 @@ __4. 스프링 빈 의존관계 설정 - 완료__
 <br/>
 
 __설명 예시 그림__
-![img_4.jpg](img_4.jpg)  
+![img_4.jpg](img/img_4.jpg)  
 <br/>
 
 ### 예제 코드 - ApplicationContextExtendsFindTest
@@ -126,7 +126,7 @@ __설명 예시 그림__
 <br/><br/><br/>
 
 ## 06. BeanFactory와 ApplicationContext
-![img_5.jpg](img_5.jpg)  
+![img_5.jpg](img/img_5.jpg)  
 <br/>
 
 ### BeanFactory
@@ -142,7 +142,7 @@ __설명 예시 그림__
 <br/>
 
 ### ApplicationContext가 제공하는 부가기능
-![img_6.jpg](img_6.jpg)
+![img_6.jpg](img/img_6.jpg)
 - 메시지소스를 활용한 국제화 기능
   - 예를 들면 한국에서 들어오면 한국어, 영어권에서 들어오면 영어를 출력
 - 환경변수
@@ -165,7 +165,7 @@ __설명 예시 그림__
 - 자바 코드, XML, Groovy 등  
 <br/>
 
-![img_7.jpg](img_7.jpg)  
+![img_7.jpg](img/img_7.jpg)  
 <br/>
 
 ### 애노테이션 기반 자바 코드 설정 사용
@@ -180,4 +180,39 @@ __설명 예시 그림__
 <br/>
 
 ### XML 기반의 스프링 빈 설정 정보 - src/main/resources/appConfig.xml
-- `appConfig.xml` 스프링 설정 정보와 `AppConfig.java` 설정 정보를 비교해보면 거의 비슷함
+- `appConfig.xml` 스프링 설정 정보와 `AppConfig.java` 설정 정보를 비교해보면 거의 비슷함  
+<br/><br/><br/>
+
+## 08. 스프링 빈 설정 메타 정보 - BeanDefinition
+![img_8.jpg](img/img_8.jpg)
+- `BeanDefinition`이란 추상화 덕분에 스프링은 다양한 설정 형식을 지원함
+  - 스프링 컨테이너는 `자바코드``XML`을 몰라도 된다 오직 `BeanDefinition`만 알면 됨
+- 여기서 `BeanDefinition`을 `빈 설정 메타정보`라고 함
+  - `@Bean(자바코드)` `<bean>(XML)`당 각각 하나씩 메타정보가 생성됨
+  - 스프링 컨테이너는 이 `메타정보`를 기반으로 해서 스프링 빈을 생성함  
+<br/>
+
+### 코드 레벨로 조금 더 깊이 있게 보면~
+![img_9.jpg](img/img_9.jpg)
+- `AnnotationConfigApplicationContext`는 `AnnotatedBeanDefinitionReader`를 사용해 `AppConfig.class`를 읽어 `BeanDefinition`을 생성
+- `GenericXmlApplicationContext`는 `XmlBeanDefinitionReader`를 사용해 `appConfig.xml`설정 정보를 읽고 `BeanDefinition`을 생성
+- 새로운 형식의 설정 정보가 추가되면 새로운 `BeanDefinitionReader`를 만들어 `BeanDefinition`을 생성  
+<br/>
+
+### BeanDefinition 살펴보기
+`BeanDefinition` 정보
+- BeanClassName: 생성할 빈의 클래스 명(자바 설정 처럼 팩토리 역할의 빈을 사용하면 없음)
+- factoryBeanName: 팩토리 역할의 빈을 사용할 경우 이름, 예) appConfig
+- factoryMethodName: 빈을 생성할 팩토리 메서드 지정, 예) memberService
+- Scope: 싱글톤(기본값)
+- lazyInit: 스프링 컨테이너를 생성할 때 빈을 생성하는 것이 아니라, 실제 빈을 사용할 때 까지 최대한 생
+- 성을 지연처리 하는지 여부
+- InitMethodName: 빈을 생성하고, 의존관계를 적용한 뒤에 호출되는 초기화 메서드 명
+- DestroyMethodName: 빈의 생명주기가 끝나서 제거하기 직전에 호출되는 메서드 명
+- Constructor arguments, Properties: 의존관계 주입에서 사용한다. (자바 설정 처럼 팩토리 역할의 빈을 사용하면 없음)  
+<br/>
+
+### 정리
+- `BeanDefinition`을 직접 생성해 스프링 컨테이너에 등록 할 수 있지만 실무에서 직접 정의하거나 사용하는 일은 거의 없음
+- 하지만 다른 스프링 코드나 스프링 관련 오픈 소스를 보면 `BeanDefinition`이 보일 때가 있음
+  - 이 때, 이러한 메커니즘을 떠올리면 도움이 될 것
