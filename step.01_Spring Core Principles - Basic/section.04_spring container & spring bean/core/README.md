@@ -57,7 +57,7 @@ __4. 스프링 빈 의존관계 설정 - 완료__
 - `Tip!` : 작성 코드를 드래그해 선택한 후 `ctrl + d'를 하면 선택 영역이 복사 된다!  
 <br/>
 
-### class ApplicationContextInfoTest
+### 예제 코드 - class ApplicationContextInfoTest
 - 모든 빈 출력 - `findAllBean()`
   - 실행 시 스프링에 등록된 모든 빈 정보를 출력
   - `getBeanDefinitionNames()` : 스프링에 등록된 모든 빈 이름을 조회
@@ -87,4 +87,20 @@ __4. 스프링 빈 의존관계 설정 - 완료__
 - `findBeanName2()` : 인스턴스가 아닌 구현 클래스 타입으로 조회
   - 이와 같은 방법은 구현 클래스의 변경에 영향을 받으므로 유연성이 떨어져 좋지 않음
 - `findBeanNameX()` : 빈의 이름이 없는 확인(있다면 테스트 실패, 없다면 테스트 성공)
-  - 람다식을 사용하여 빈 이름을 조회할 때 `NoSuchBeanDefinitionException` 발생하는지 확인
+  - 람다식을 사용하여 빈 이름을 조회할 때 `NoSuchBeanDefinitionException` 발생하는지 확인  
+<br/><br/><br/>
+
+## 04. 스프링 빈 조회 - 동일한 타입이 둘 이상
+- `Tip!` : 변수 생성시 생성부를 먼저 작성한 후 `ctrl + alt + v`를 사용하면 선언부가 자동 생성된다!  
+<br/>
+
+- 타입만으로 스프링 빈 조회시 같은 타입의 스프링 빈이 둘 이상이라면 오류가 발생한다. -> 빈 이름 지정 필요
+- `ac.getBeansOfType()`을 사용하면 해당 타입의 모든 빈을 조회 가능  
+<br/>
+
+### 예제 코드 - ApplicationContextSameBeanFindTest
+- `findBeanByTypeDuplicate()` : 이름은 다르지만 같은 타입의 스프링 빈이 둘 이상 있을 경우 예외가 발생하는지 확인
+  - `getBean()`을 사용해 타입만 지정해 스프링 빈을 조회할 경우 `NoUniqueBeanDefinitionException` 예외가 발생한다
+  - 이는 둘 중 어떤 스프링 빈을 반환해야 할 지 몰라서 생기는 예외이다.
+- `findBeanByName()` : `getBean()`을 사용할 때 타입 중복으로 생기는 문제점을 해결하려면 타입뿐만 아니라 스프링 빈 이름도 지정해준다.
+- `findAllBeanByType()` : 특정 타입의 모든 스프링 빈을 조회하고 싶다면 `getBeansOfType()`을 사용한다.
