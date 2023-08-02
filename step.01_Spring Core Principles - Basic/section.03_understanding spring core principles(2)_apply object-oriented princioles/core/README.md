@@ -4,7 +4,7 @@
 <br/>
 
 ### __RateDiscountPolicy__ 추가
-![img.png](img.png)  
+![img.png](img/img.png)  
 <br/>
 
 - `class RateDiscountPolicy` : 일정 %의 할인 금액을 반환한다.
@@ -25,18 +25,18 @@
 <br/>
 
 ### 기대했던 혹은 바랬던 의존관계
-![img_1.png](img_1.png)  
+![img_1.png](img/img_1.png)  
 단순하게 `DiscountPolicy` 인터페이스에만 의존한다고 잘못 생각함  
 <br/>
 
 ### 실제 의존관계
-![img_2.png](img_2.png)  
+![img_2.png](img/img_2.png)  
 보다싶이 `DiscountPolicy`뿐 아니라 구체 클래스 `FixDiscountPolicy`도 함께 의존하고 있다  
 이는 `DIP 위반`이다!!  
 <br/>
 
 ### 정책 변경 시 의존관계
-![img_3.png](img_3.png)  
+![img_3.png](img/img_3.png)  
 그래서 보는 것 처럼 구체 클래스를 타 클래스로 변경하는 순간 `OrderServiceImpl`도 함께 수정해야 하므로 `OCP 위반`이다.  
 <br/>
 
@@ -46,7 +46,7 @@
 <br/>
 
 ### 인터페이에만 의존하도록 설계를 변경!
-![img_4.png](img_4.png)  
+![img_4.png](img/img_4.png)  
 <br/>
 
 ### 인터페이스에만 의존하도록 코드를 변경!
@@ -87,14 +87,14 @@ public class OrderServiceImpl implements OrderService {
 <br/>
 
 ### 그림 - 클래스 다이어그램
-![img_5.png](img_5.png)
+![img_5.png](img/img_5.png)
 - 객체 생성과 연결은 `AppConfig`가 담당
 - `DIP 충족!` : `MemberServiceImpl`은 이제부터 추상(인터페이스)에만 의존하면 됨(a.k.a 구체 클레스 is 뭔들)
 - `관심사의 분리` : `객체 생성 및 주입(연결) 역할` `실행 역할`이 명확하게 분리됨  
 <br/>
 
 ### 그림 - 회원 객체 인스턴스 다이어그램
-![img_6.png](img_6.png)
+![img_6.png](img/img_6.png)
 - `appConfig` 객체는 `memoryMemberRepository` 객체를 생성, 그 참조값을 `memberServiceImpl`로 생성하며 생성자로 전달함
 - 클라이언트인 `memberServiceImpl` 입장에서는 의존관계를 마치 외부에서 주입해주는 것 같음
   - 이를 `DI(Dependency Injection)` 우리말로 `의존관계 주입` 또는 `의존성 주입`이라 한다.  
@@ -147,7 +147,7 @@ class MemberServiceTest {
 <br/>
 
 ### 기대하는 그림
-![img_7.png](img_7.png)  
+![img_7.png](img/img_7.png)  
 <br/>
 
 ### 리팩터링 후
@@ -184,11 +184,11 @@ public class AppConfig {
 <br/>
 
 ### 현재 사용과 구성의 분리 
-![img_8.png](img_8.png)  
+![img_8.png](img/img_8.png)  
 
 
 ### 할인 정책의 변경
-![img_9.png](img_9.png)
+![img_9.png](img/img_9.png)
 - 특정 구체 클래스를 변경해도 구성 영역에만 영향이 있을 뿐 사용 영역에는 전혀 영향이 가지 않는다!  
 <br/>
 
@@ -292,7 +292,7 @@ public DiscountPolicy discountPolicy() {
 <br/>
 
 ### 클래스 다이어그램
-![img_10.png](img_10.png)  
+![img_10.png](img/img_10.png)  
 <br/>
 
 ### 동적인 객체 인스턴스 의존 관계
@@ -300,7 +300,7 @@ public DiscountPolicy discountPolicy() {
 <br/>
 
 ### 객체 다이어그램
-![img_11.png](img_11.png)
+![img_11.png](img/img_11.png)
 - `실행 시점(런타임)`에 외부(AppConfig)에서 실제 구현 객체를 생성하고 클라이언트에 전달 후 `클라이언트 - 실제 구현 객체`의 관계가 연결(주입)되는 것을 `의존관계 주입`이라고 함
 - 의존관계를 주입하게 되면 클라이언트 코드 변경 없이 클라이언트가 호출하는 대상(인스터스)을 변경할 수 있음
 - 즉, 정적인 클래스 의존관계 변경 없이 동적인 객체 인스턴스 의존관계를 쉽게 변경 가능함  
@@ -309,4 +309,20 @@ public DiscountPolicy discountPolicy() {
 ### IoC 컨테이너, DI 컨테이너
 - 객체를 생성 및 연결(주입)해 주는 것(like AppConfig)을 `IoC 컨테이너(DI보다 범용적 의미)` 또는 `DI 컨테이너`라 함
   - 만약 `의존관계 주입`에 초점을 맞춘다면 `DI 컨테이너`라 하는게 맞다
-- 그 외로 `어샘블러` `오브젝트 팩토리` 등으로 불리기도 함
+- 그 외로 `어샘블러` `오브젝트 팩토리` 등으로 불리기도 함  
+<br/><br/><br/>
+
+## 09. 스프링으로 전환하기
+- 지금 까지 순수한 자바 코드만으로 DI를 적용해왔다. 이제 스프링을 사용해보자~!  
+<br/>
+
+### 스프링 컨테이너 
+스프링 전환 수정코드는 'AppConfig', 'OrderApp', 'MemberApp' 클래스를 확인!
+- `ApplicationContext`를 스프링 컨테이너라 한다.
+- 이전에는 `AppConfig`를 통해 개발자가 직접 객체를 생성하고 의존성을 주입했지만 앞으로는 `스프링 컨테이너`를 통해 사용한다.
+- `@Configuration`이 붙은 `AppConfig`를 설정(구성) 정보로 사용함
+  - 이 때 `@Bean`이 붙은 모든 메서드를 호출해 반환된 객체를 스프링 컨테이너에 등록함
+  - 이렇게 스프링 컨테이너에 등록된 객체를 `스프링 빈`이라고 함
+- 스프링 빈의 경우 `@Bean`이 붙은 메서드 명을 이름으로 사용함
+- 스프링 컨테이너에서 필요한 스프링 빈(객체)를 찾을 땐 `applicationContext.getBean()` 메서드를 사용한다.
+- 이제부터는 객체를 스프링 빈으로 등록하고 이를 찾아서 사용하도록 한다.
