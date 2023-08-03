@@ -91,4 +91,88 @@
 - 위와 같은 상황은 실무에서 종종 볼 수 있다. 하지만 정말 해결하기 어렵기 때문에 큰 문제를 야기하는 골치아픈 상황이다.
   - 그러므로 반드시 `공유필드`는 조심, 또 조심해야 한다.
   - 스프링 빈은 항상 `무상태(stateless)`로 설계해야 한다는 점 명심하자!
-- 문제 해결을 위해 두 클래스에 주석으로 설명을 적어두었다. 참고하도록하자
+- 문제 해결을 위해 두 클래스에 주석으로 설명을 적어두었다. 참고하도록하자  
+<br/><br/><br/>
+
+## 05. @Configuration과 싱글톤
+다음 `AppConfig` 코드의 일부를 보고 의문점이 생김
+```
+@Configuration
+public class AppConfig {
+
+  @Bean
+  public MemberService memberService() {
+    return new MemberServiceImpl(memberRepository());
+  }
+  
+  @Bean
+  public OrderService orderService() {
+    return new OrderServiceImpl(
+            memberRepository(),
+            discountPolicy());
+  }
+  
+  @Bean
+  public MemberRepository memberRepository() {
+    return new MemoryMemberRepository();
+  }
+  ...
+}
+```
+- `memberService`빈과 `orderService`빈을 각각 생성하면 결과적으로 각각 다른 2개의 `MemoryMemberRepository`가 생성된다.
+  - 각각 다른 객체가 생성되었으니 싱글톤이 깨지는 것처럼 보인다.
+  - 과연 스프링 컨테이너는 해당 부분을 어떻게 해결할까?  
+<br/>
+
+### 검증 용도 테스트 코드 작성 - ConfigurationSingletonTest
+```
+    // @Configuration 테스트 용도
+    public MemberRepository getMemberRepository() {
+        return memberRepository;
+    }
+```
+- 검증을 위해 위의 코드를 `OrderServiceImpl` `MemberServiceImpl`에 각각 추가한다.
+  - `MemberRepository`를 조회할 수 있는 기능을 추가  
+<br/>
+
+- 확인 결과 총 3번 생성된 `memberRepository`인스턴스 모두 같은 인스턴스가 공유되어 사용되고 있음
+- 혹시 중복 호출이 되지 않은 걸까?  
+<br/>
+
+### AppConfig에 호출 기록이 남도록 코드 추가
+```
+    @Bean
+    public MemberService memberService() {
+        System.out.println("call AppConfig.memberService");
+        return new MemberServiceImpl(memberRepository());
+    }
+
+    @Bean
+    public MemoryMemberRepository memberRepository() {
+        System.out.println("call AppConfig.memberRepository");
+        return new MemoryMemberRepository();
+    }
+
+    @Bean
+    public OrderService orderService() {
+        System.out.println("call AppConfig.orderService");
+        return new OrderServiceImpl(memberRepository(), discountPolicy());
+    }
+```
+- `memberService()` `memberRepository()` `orderService()`에 메소드가 호출되면 메시지가 출력되도록 코드를 추가함  
+<br/>
+#### 출력될 메시지를 순서에 상관없이 임의로 예상했을 경우 (memberService() -> orderService() -> memberRepository() 순)
+```
+  call AppConfig.memberService
+  call AppConfig.memberRepository
+  call AppConfig.orderService
+  call AppConfig.memberRepository
+  call AppConfig.memberRepository
+```  
+#### 신기한 실제 출력 결과 - `ConfigurationSingletonTest` 테스트 실행
+```
+  call AppConfig.memberService
+  call AppConfig.memberRepository
+  call AppConfig.orderService
+```
+- 중복 없이 메서드 당 1번만 호출된 걸 확인 할 수 있음
