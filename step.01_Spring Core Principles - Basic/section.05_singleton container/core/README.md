@@ -161,6 +161,7 @@ public class AppConfig {
 ```
 - `memberService()` `memberRepository()` `orderService()`에 메소드가 호출되면 메시지가 출력되도록 코드를 추가함  
 <br/>
+
 #### 출력될 메시지를 순서에 상관없이 임의로 예상했을 경우 (memberService() -> orderService() -> memberRepository() 순)
 ```
   call AppConfig.memberService
