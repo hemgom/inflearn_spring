@@ -96,10 +96,11 @@ __2. @Autowired (의존관계 자동 주입)__
 <br/>
 
 예를 들어 아래와 같이 프로젝트 구조가 되어 있다면?
-- com.hello
-- com.hello.serivce
-- com.hello.repository  
-
+```
+ - com.hello
+ - com.hello.serivce
+ - com.hello.repository  
+```
 최상단 위치인 `com.hello`에 `AutoAppConfig`같은 메인 설정 정보를 위치하고 `@ComponentScan`을 붙이며 스캔 시작 위치는 생략한다.
 - 참고로 스프링 부트의 대표적인 시작 정보인 `@SpringBootApplication`을 시작 루트 위치에 두는 것이 관례!  
 <br/>
@@ -124,4 +125,49 @@ __2. @Autowired (의존관계 자동 주입)__
 - `@Service` : 사실 `@Service`는 특별한 처리를 하지 않음, 개발자가 핵심 비즈니스 로직 식별에 도움이 됨  
 <br/>
 
-- `참고!` : `useDefaultFilters` 옵션은 기본으로 켜져있는데, 옵션을 끄면 기본 스캔 대상들이 제외 됨
+- `참고!` : `useDefaultFilters` 옵션은 기본으로 켜져있는데, 옵션을 끄면 기본 스캔 대상들이 제외 됨  
+<br/><br/><br/>
+
+## 03. 필터
+- `includeFilters` : 컴포넌트 스캔 대상을 추가로 지정
+- `excludeFilters` : 컴포넌트 스캔에서 제외할 대상을 지정  
+<br/>
+
+### 예제 코드
+- `@interface MyIncludeComponent` : 컴포넌트 스캔 대상에 추가할 애노테이션
+- `@interface MyExcludeComponent` : 컴포넌트 스캔 대상에 제외할 애노테이션
+- `class BeanA` : 컴포넌트 스캔 대상에 추가할 클래스
+- `class BeanB` : 컴포넌트 스캔 대상에 제외할 클래스
+- `class ComponentFilterAppConfigTest` : 컴포넌트 스캔 설정 정보를 가진 클래스
+  - `class BeanA`는 `@interface MyIncludeComponent`애노테이션을 사용해 스프링 빈에 등록됨
+  - `class BeanB`는 `@interface MyExcludeComponent`애노테이션을 사용해 스프링 빈에 등록되지 않음  
+<br/>
+
+### FilterTpye 옵션 - 5가지
+- `ANNOTATION` : 기본값, 애노테이션을 인식해서 동작
+  - ex) org.example.SomeAnnotation
+- `ASSIGNABLE_TYPE` : 지정한 타입과 자식 타입을 인식해서 동작
+  - ex) org.example.SomeClass
+- `ASPECTJ` : AspectJ 패턴 사용
+  - ex) org.example..*Service+
+- `REGEX` : 정규 표현식
+  - ex) org\.example\.Default.*
+- `CUSTOM` : TypeFilter 이라는 인터페이스를 구현해서 처리
+  - ex) org.example.MyTypeFilter  
+<br/>
+
+### 만약 `BeanA`도 빼고 싶다면?
+```
+  @ComponentScan(
+    includeFilters = { 
+          @Filter(type = FilterType.ANNOTATION, classes = MyIncludeComponent.class),
+    },
+    excludeFilters = {
+          @Filter(type = FilterType.ANNOTATION, classes = MyExcludeComponent.class),
+          @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = BeanA.class)
+    }
+  )
+```
+- `참고!` : `@Component`면 충분하기 때문에, `includeFilters`를 사용할 일은 거의 없다.
+  - 최근 스프링 부트는 컴포넌트 스캔을 기본으로 제공
+  - 옵션을 변경하면서 사용하기 보다는 스프링의 기본 설정에 최대한 맞추어 사용하는 것을 권장함
