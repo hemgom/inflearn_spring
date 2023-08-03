@@ -1,6 +1,6 @@
 # 섹션 05. 싱글톤 컨테이너
 ## 01. 웹 애플리케이션과 싱글톤
-![img.jpg](img.jpg)
+![img.jpg](img/img.jpg)
 - 스프링은 `기업용 온라인 서비스 기술`을 지원하기 위해 태어났다.
 - 대부분의 스프링 애플리케이션은 `웹 애플리케이션`이다.
   - 물론 그 외의 개발도 얼마든지 가능하다.
@@ -65,7 +65,7 @@
 <br/>
 
 ### 싱글톤 컨테이너 적용 후
-![img_1.jpg](img_1.jpg)
+![img_1.jpg](img/img_1.jpg)
 - 스프링 컨테이너 덕분에 고객의 요청이 올 때 마다 객체를 생성할 필요가 없음
 - 이미 만들어진 객체를 공유해서 낭비없이 효율적으로 재사용이 가능함  
 <br/>
@@ -176,4 +176,69 @@ public class AppConfig {
   call AppConfig.memberRepository
   call AppConfig.orderService
 ```
-- 중복 없이 메서드 당 1번만 호출된 걸 확인 할 수 있음
+- 중복 없이 메서드 당 1번만 호출된 걸 확인 할 수 있음  
+<br/><br/><br/>
+
+## 06. @Configuration과 바이트코드 조작의 마법
+### 스프링 컨테이너(= 싱글톤 레지스트리)는 스프링 빈이 싱글톤이 되도록 보장해야 함  
+- 하지만 스프링이 자바 코드까지 어떻게 하기는 어려움
+  - 그래서 클래스의 바이트코드를 조작하는 라이브러리를 사용함
+- 사실 모든 비밀은 `@Configuration`을 적용한 `AppConfig`에 있음  
+<br/>
+
+### AppConfig 스프링 빈 등록 - ConfigurationSingletonTest(configurationDeep())
+```
+    @Test
+    void configurationDeep() {
+
+        ApplicationContext ac = new AnnotationConfigApplicationContext(AppConfig.class);
+
+        // AppConfig도 스프링 빈으로 등록이 됨
+        AppConfig bean = ac.getBean(AppConfig.class);
+
+        System.out.println("bean = " + bean.getClass());
+        // 출력 결과 : bean = class hello.core.AppConfig$$SpringCGLIB$$0
+    }
+```
+- `AnnotationConfigApplicationContext`에 파라미터로 넘긴 값(AppConfig.class)은 스프링 빈으로 등록 됨
+- 사실 순수한 클래스라면 `class hello.core.AppConfig`가 출력되어야 하는데 출력 결과가 다름
+  - 이는 작성자가 만든 클래스가 아니라 스프링이 `CGLIB`라는 바이트코드 조작 라이브러리를 사용했기 때문
+    - 즉, `AppConfig`를 상속받는 임의의 다른 클래스를 생성한 뒤 스프링 빈으로 등록한 것!  
+<br/>
+
+__그림을 통해 확인하면__
+![img_2.jgp](img/img_2.jpg)
+- 임의의 다른 클래스로 인해 싱글톤이 보장이 됨
+  - 아마도 바이트코드를 조작해 작성되어 있을 것임(자세한 내용은 너무 복잡해 강의에서 다루진 않음)  
+<br/>
+
+### AppConfig@CGLIB 예상코드
+```
+  @Bean
+  public MemberRepository memberRepository() {
+    if (memoryMemberRepository가 이미 스프링 컨테이너에 등록되어 있으면?) {
+      return 스프링 컨테이너에서 찾아서 반환;
+    } else { // 스프링 컨테이너에 없으면
+      기존 로직을 호출해서 MemoryMemberRepository를 생성하고 스프링 컨테이너에 등록
+      return 반환
+    }
+  }
+```
+- `@Bean`이 붙은 메서드마다 이미 스프링 빈이 존재하면 존재하는 빈을 반환함  
+  - 만약 없다면 생성해서 등록 후 반환하는 코드가 동적으로 만들어짐
+- 위와 같은 이유로 싱글톤이 보장이 됨  
+<br/>
+
+- `참고(3)` : `AppConfig@CGLIB`는 `AppConfig의 자식 타입`이므로, AppConfig 타입으로 조회 가능함  
+<br/>
+
+### 만약 @Configuration을 적용하지 않고 @Bean만 적용하면?
+- 바이트 코드를 조작하는 `CGLIB`기술이 빠지면서 순수한 `AppConfig`가 스프링 빈에 등록된다.
+- 메서드 호출 또한 싱글톤 보장이 안되므로 `MemberRepository`가 3번 호출되게 됨
+- 인스턴스 비교 테스트를 해보면 당연하게도 테스트는 실패하고 각각 서로 다른 `MemoryMemberRepository`인스턴스를 가짐  
+<br/>
+
+### 정리
+- `@Bean`만 사용 할 경우 스프링 빈으로 등록을 할 수 있으나 싱글톤을 보장하진 않음
+  - 의존관계 주입시 메서드 호출을 통해 싱글톤 보장이 지켜지지 않음
+- 항상 `@Configuration`을 사용하자!!
