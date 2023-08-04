@@ -58,7 +58,7 @@ ClassPathBeanDefinitionScanner - Identified candidate component class:
 
 ### 그림으로 알아보는 컴포넌트 스캔과 자동 의존관계 주입
 __1. @ComponenetScan (컴포넌트 스캔)__
-![img.jpg](img.jpg)
+![img.jpg](img/img.jpg)
 - `@ComponentScan`은 `@Component`가 붙은 모든 클래스를 스프링 빈으로 등록함
 - 이 때 생성되는 빈의 이름은 클래스명에서 맨 앞 글자를 소문자로 바꾸어 사용함
   - 빈 이름 기본 : ex) MemberSeriveImpl (클래스) -> memberServiceImpl (빈)
@@ -67,8 +67,8 @@ __1. @ComponenetScan (컴포넌트 스캔)__
 <br/>
 
 __2. @Autowired (의존관계 자동 주입)__
-![img_1.jpg](img_1.jpg)
-![img_2.jpg](img_2.jpg)
+![img_1.jpg](img/img_1.jpg)
+![img_2.jpg](img/img_2.jpg)
 - 클래스 생성자에 `@Autowired`를 붙이면 스프링 컨테이너가 자동으로 해당하는 스프링 빈을 찾아 주입한다.
 - 스프링 빈 조회 시 기본 전략은 `타입이 같은` 빈을 찾아 주입한다.
   - `getBean(MemberRepository.class`와 동일하다 보면 됨
@@ -170,4 +170,26 @@ __2. @Autowired (의존관계 자동 주입)__
 ```
 - `참고!` : `@Component`면 충분하기 때문에, `includeFilters`를 사용할 일은 거의 없다.
   - 최근 스프링 부트는 컴포넌트 스캔을 기본으로 제공
-  - 옵션을 변경하면서 사용하기 보다는 스프링의 기본 설정에 최대한 맞추어 사용하는 것을 권장함
+  - 옵션을 변경하면서 사용하기 보다는 스프링의 기본 설정에 최대한 맞추어 사용하는 것을 권장함  
+<br/>
+
+## 04. 중복 등록과 충돌
+### 컴포넌트 스캔에서 같은 빈 이름을 등록한다면?
+#### 1. 자동 빈 등록 vs 자동 빈 등록
+- 컴포넌트 스캔에 의해 자동으로 스프링 빈 등록이 되고 이름이 같은 경우 스프링은 오류를 발생시킴
+  - `ConflictingBeanDefinitionException` 예외 발생  
+<br/>
+
+#### 2. 수동 빈 등록 vs 자동 빈 등록
+- 수동 빈과 자동 빈 등록에서 빈 이름이 충돌 된다면?
+  - 해당 경우 자동 빈을 수동 빈이 오버라이딩 해버림
+```
+Overriding bean definition for bean 'memoryMemberRepository' with a different definition: replacing
+```
+- 대부분의 경우가 의도치 않게 여러 설정이 꼬여 위와 같은 결과가 만들어짐
+  - 이럴 경우 정말 잡기 어려운 버그(애매한 버그)가 발생함
+- 결국 스프링 부트에서는 수동 빈 등록과 자동 빈 등록이 충돌이 날 경우 오류가 발생하도록 기본 값을 바꿈  
+```
+Consider renaming one of the beans or enabling overriding by setting spring.main.allow-bean-definition-overriding=true
+```
+- 이와 같은 오류는 스프링 부트의 `CoreApplication`을 실행해보면 된다.
