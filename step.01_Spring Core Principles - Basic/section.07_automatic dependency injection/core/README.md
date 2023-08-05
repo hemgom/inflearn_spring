@@ -369,4 +369,37 @@ public @interface MainDiscountPolicy {}
   - 컴파일 단계에서 오류(타입 체크)를 확인 할 수 있게 됨
 - 저번에도 언급했지만 애노테이션 자체에는 `상속`의 개념이 적용되지 않음
   - 하나의 애노테이션 안에 다른 애노테이션들이 모여있을 수 있는건 스프링의 제공 기능임
-  - 특정 애노테이션을 재정의하여 사용 할 수는 있지만, 혼란 방지를 위해 무분별한 재정의는 해선 안됨
+  - 특정 애노테이션을 재정의하여 사용 할 수는 있지만, 혼란 방지를 위해 무분별한 재정의는 해선 안됨  
+<br/><br/><br/>
+
+## 08. 조회한 빈이 모두 필요할 때, List, Map
+정말로, 의도한대로 특정 타입의 스프링 빈이 전부 필요한 경우도 분명있다.  
+- ex) 클라이언트가 다수의 할인정책들 중 특정 할인정책을 선택해서 사용해야 하는 경우 등  
+<br/>
+
+### 조회한 모든 빈 사용 - AllBeanTest
+#### 로직 분석
+- `DiscountService`는 `Map`으로 모든 `DiscountPolicy`를 주입 받는다.
+  - `fixDiscountPolicy` `rateDiscountPolicy` 둘 모두 주입된다.
+- `discount()` 메서드
+  - `String discountCode`로 빈 이름이 넘어오면 `policyMap`에서 해당 이름의 스프링 빈을 찾아 실행  
+<br/>
+
+#### 주입 분석
+- `Map<String, DiscountPolicy>`
+  - `key` : `스프링 빈 이름`을 저장
+  - `value` : `DiscountPolicy 타입`으로 조회한 `모든 스프링 빈`을 저장
+  - `map`에는 `스프링 빈 이름`과 해당하는 `스프링 빈`이 한 쌍이 되어 저장된다.
+- `List<DiscountPolicy>` : `DiscountPolicy 타입`으로 조회한 모든 스프링 빈을 담아준다.
+- 만약 해당하는 타입의 스프링 빈이 없으면, 빈 컬렉션이나 Map을 주입한다.  
+<br/>
+
+#### 스프링 컨테이너 생성시 스프링 빈 등록
+- 스프링 컨테이너 생성시 파라미터로 클래스 정보를 받으면 해당 클래스를 스프링 빈으로 자동 등록한다.  
+```
+new AnnotationConfigApplicationContext(AutoAppConfig.class,DiscountService.class);
+```  
+- 위 코드는 2가지로 나누어 이해할 수 있다.
+  1. `new AnnotationConfigApplicationContext()`으로 스프링 컨테이너를 생성
+  2. `AutoAppConfig.class` `DiscountService.class` 클래스를 파라미터로 클래스 정보를 넘기면서 자동으로 스프링 빈 등록
+- 정리하면 스프링 컨테이너 생성시 동시에 `AutoAppConfig` `DiscountService`를 스프링 빈으로 등록하는 코드이다.
