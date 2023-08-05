@@ -280,7 +280,7 @@ but found 2: fixDiscountPolicy,rateDiscountPolicy
 - 하위 타입으로 지정해 해결할 수 있긴 하지만 이는 `DIP`를 위배하고 `유연성`이 떨어지게 된다.
   - 또 이름만 다른 같은 타입의 스프링 빈이 2개 있다면 해결이 되지 않음
 - 수동으로 등록해서 해결해도 되지만 사실 해당 문제에 대한 해결 방법은 여러가지가 있음  
-<br/>
+<br/><br/><br/>
 
 ## 06. @Autowired 필드 명, @Qualifire, @Primary
 이전 강의에서 다룬 문제의 해결 방법에 대해서 알아보도록 하자!  
@@ -350,4 +350,23 @@ public class RateDiscountPolicy implements DiscountPolicy {}
    - `@Primary` 승! : `@Qualifire`의 경우 사용할 빈 등록과 의존관계 주입시 전부 `Qualifire`를 붙여줘야 함
 2. 둘을 모두 사용하는 경우의 우선순위는
    - `@Qualifire` 승! : `@Qualifire`는 상세하게 동작하고 `@Primary`는 기본값 처럼 동작하기 때문
-     - 스프링은 자동보다는 `수동`을 그리고 넒은 범위의 선택권 보다는 `좁은 범위의 선택권`을 우선시 한다.
+     - 스프링은 자동보다는 `수동`을 그리고 넒은 범위의 선택권 보다는 `좁은 범위의 선택권`을 우선시 한다.  
+<br/><br/><br/>
+
+## 07. 애노테이션 직접 만들기
+`@Qualifier("mainDiscountPolicy")` 사용시 컴파일 단계에서 오류(타입 체크)를 확인 할 수 없는 단점이 있다.  
+이러한 부분은 `애노테이션`을 직접 만들어 해결 할 수도 있다.
+```
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER,
+        ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Qualifier("mainDiscountPolicy")
+public @interface MainDiscountPolicy {}
+```
+- `@MainDiscountPolicy` : `@Qualfire` 소스코드에 사용된 애노테이션들과 `@Qualfire`를 붙여서 만들어 줌
+- 이렇게 만들어진 `@MainDiscountPolicy`를 빈 등록과 의존관계 주입시 붙여 사용하면 된다.
+  - 컴파일 단계에서 오류(타입 체크)를 확인 할 수 있게 됨
+- 저번에도 언급했지만 애노테이션 자체에는 `상속`의 개념이 적용되지 않음
+  - 하나의 애노테이션 안에 다른 애노테이션들이 모여있을 수 있는건 스프링의 제공 기능임
+  - 특정 애노테이션을 재정의하여 사용 할 수는 있지만, 혼란 방지를 위해 무분별한 재정의는 해선 안됨
