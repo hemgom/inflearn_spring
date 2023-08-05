@@ -139,13 +139,13 @@ class Data {
 ## 03. 생성자 주입을 선택해라!
 과거에는 `수정자(setter) 주입`과 `필드 주입`을 많이 사용했었다.  
 하지만 최근에는 스프링을 포함한 DI 프레임워크 대부분이 `생성자 주입`을 권장하는데 그 이유는 아래와 같다.    
-1. 불변
+### 1. 불변
    - 대부분의 의존관계 주입은 한 번 수행되면 애플리케이션 종료시점까지 의존관계를 변경할 일이 없음
      - 오히려 애플리케이션 종료 전에 변경되면 문제가 생김
    - `수정자 주입`을 사용하려면 `setXxx()`를 `public`으로 열어두어야 함
      - 분명 누구간 변경하는 실수가 생기므로 메서드를 열어두는 건 좋지 않은 설계 방법이다.
      - `생성자 주입`의 경우 객체 생성시 딱 1번 호출 되므로 불변하게 설계를 원할 때 사용하기 용이하다.
-2. 누락
+### 2. 누락
    - 의존관계에 의해 필요한 `객체 생성 또는 주입의 누락`이 발생함
    - 아래의 테스트 코드 결과로 그 차이점 더 명확하게 알 수 있다.
 ```
@@ -160,7 +160,7 @@ class Data {
 - `생성자 주입` : 애초에 실행이 되지 않는 `컴파일 오류`가 발생함
   - 오류 발생을 직관적으로 볼 수 있어 개발자가 객체 생성시 의존관계 주입이 필요함을 쉽게 알 수가 있음
   - `IDE`에서 어떤 값을 필수로 주입해야하는지도 알 수 있음
-3. final 키워드
+### 3. final 키워드
    - `생성자 주입`사용 시 필드에 `final`키워드를 사용할 수 있음
      - 그렇기에 혹시라도 생성자에 코드가 누락되면 컴파일 시점에 누락을 확인 할 수 있다.
      - 컴파일 오류 `java: variable discountPolicy might not have been initialized`
@@ -169,4 +169,88 @@ class Data {
 
 - `참고!` : `생성자 주입`을 제외한 나머지 주입 방식들은 모두 생성자 이후에 호출 된다.
   - 그렇기에 필드에 `final`키워드를 사용할 수 없다.
-  - 필드에 `final`키워드를 사용하고 싶다면 오직 `생성자 주입`방식을 사용해야 한다.
+  - 필드에 `final`키워드를 사용하고 싶다면 오직 `생성자 주입`방식을 사용해야 한다.  
+<br/>
+
+### 정리 
+- 프레임워크에 의존하지 않고 순수한 자바 언어의 특징을 잘 살리기 위해 `생성자 주입`방식을 사용하자!
+- 기본적으로 `생성자 주입`을 사용하고, 필수 값이 아닐 경우에는 `수정자 주입`으로 옵션을 부여하면 된다.
+  - 당연하지만 두 가지 주입 방식을 동시에 사용할 수는 없다.
+- 되도록 `생성자 주입`을 사용하도록 하자!!
+  - 가끔 옵션이 필요한 경우 `수정자 주입`을 사용하고 `필드 주입`은 생각도 하지 말자!  
+<br/><br/><br/>
+
+## 04. 롬복과 최신 트랜드
+개발을 하다보면 대부분이 `불변`이어야하고 그래서 필드에 `final`키워드를 사용하게 된다.  
+하지만 할게 많은 개발자의 입장에서 `필드 주입`같은 편리함을 찾게 되는데 이러한 방법에 대해 알아보자!  
+<br/>
+
+### 롬복 라이브러리 적용 방법
+#### build.gradle에 라이브러리 및 환경 추가
+```
+  ...
+  // lombok 설정 추가 시작
+  configurations {
+    compileOnly {
+	  extendsFrom(annotationProcessor)
+	}
+  }
+  // lombok 설정 추가 끝
+  
+  ...
+  
+    dependencies {
+	  implementation 'org.springframework.boot:spring-boot-starter'
+	
+	  // lombok 라이브러리 추가 시작
+	  compileOnly 'org.projectlombok:lombok'
+	  annotationProcessor 'org.projectlombok:lombok'
+	
+	  testCompileOnly 'org.projectlombok:lombok'
+	  testAnnotationProcessor 'org.projectlombok:lombok'
+	  // lombok 라이브러리 추가 끝
+	
+	  testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    }
+  ...
+```
+- 해당 코드를 입력해도 되고 스프링 부트 생성시 `dependency -> Lombok을 추가`해도 된다.
+- `lombok`을 추가 했다면 아래의 설정도 해주도록 하자.
+  1. Preferences(윈도우 File Settings) plugin `lombok` 검색 - 설치 - 실행(재시작)
+  2. `Preferences Annotation Processors` 검색 `Enable annotation processing 체크`(재시작)
+  3. 임의의 테스트 클래스를 만들고 `@Getter` `@Setter` 확인  
+<br/>
+
+### 기존 코드와 롬복 사용 코드
+```
+@Component
+// 기가막힌 롬복 시작
+@RequiredArgsConstructor // final 키워드가 붙은 객체의 필드 요소를 파라미터로하는 생성자를 만들어 줌
+public class OrderServiceImpl implements OrderService {
+
+    private final MemberRepository memberRepository;
+    private  final DiscountPolicy discountPolicy;
+
+    /* `@RequiredArgsConstructor` 사용으로 생성자를 작성할 필요가 없음(생성자 = 기존코드)
+    (`ctrl + F12`를 누르면 생성자가 자동으로 생성됨을 알 수 있음)
+    @Autowired
+    public OrderServiceImpl(MemberRepository memberRepository, DiscountPolicy discountPolicy) {
+        this.memberRepository = memberRepository;
+        this.discountPolicy = discountPolicy;
+    }
+    */
+    ...
+}
+```
+- 기존 코드의 경우 생성자가 1개라 `@Autowired`를 생략할 수 있다는 편리함이 있었음
+- 롬복 적용을 하였더니 `@RequiredArgsConstructor` 하나만으로 생성자 작성을 생략 할 수 있었음
+  - `@RequiredArgsConstructor` : `fianl`키워드가 붙은 필드를 모아 생성자를 자동으로 만들어줌
+    - 실제로 코드에는 보이지 않지만 `ctrl + F12`를 통해 생성자가 생성됨을 알 수 있음
+- 코드의 내용이 너무나 간결해져 정말 편해 보임
+  - 또한 이후에 `final`키워드가 붙은 필드가 추가되도 생성자를 수정할 필요 없이 필드만 추가하면 됨  
+<br/>
+
+### 정리
+최근에는 생성자를 1개 두어 `@Autowired`를 생략하는 방식을 많이 사용한다.  
+여기에 `Lombok`의 `@RequiredArgsConstructor`을 더하면 기능은 다 제공 받으면서 깔끔한 코드를 사용할 수 있다.  
+한 마디로 __금상첨화!!__

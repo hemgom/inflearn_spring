@@ -4,10 +4,13 @@ import hello.core.discount.DiscountPolicy;
 import hello.core.member.Member;
 import hello.core.member.MemberRepository;
 import hello.core.member.MemoryMemberRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+// 기가막힌 롬복 시작
+@RequiredArgsConstructor // final 키워드가 붙은 객체의 필드 요소를 파라미터로하는 생성자를 만들어 줌
 public class OrderServiceImpl implements OrderService {
 
     private final MemberRepository memberRepository;
@@ -19,11 +22,13 @@ public class OrderServiceImpl implements OrderService {
     // private final DiscountPolicy discountPolicy = new RateDiscountPolicy();
     private  final DiscountPolicy discountPolicy;
 
+    /* @RequiredArgsConstructor 사용으로 생성자를 작성할 필요가 없음 (`ctrl + F12`를 누르면 생성자가 자동으로 생성됨을 알 수 있음)
     @Autowired
     public OrderServiceImpl(MemberRepository memberRepository, DiscountPolicy discountPolicy) {
         this.memberRepository = memberRepository;
         this.discountPolicy = discountPolicy;
     }
+    */
 
     @Override
     public Order createOrder(Long memberId, String itemName, int itemPrice) {
