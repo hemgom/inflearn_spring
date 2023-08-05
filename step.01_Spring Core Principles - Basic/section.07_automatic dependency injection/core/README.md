@@ -253,4 +253,30 @@ public class OrderServiceImpl implements OrderService {
 ### 정리
 최근에는 생성자를 1개 두어 `@Autowired`를 생략하는 방식을 많이 사용한다.  
 여기에 `Lombok`의 `@RequiredArgsConstructor`을 더하면 기능은 다 제공 받으면서 깔끔한 코드를 사용할 수 있다.  
-한 마디로 __금상첨화!!__
+한 마디로 __금상첨화!!__  
+<br/><br/><br/>
+
+## 05. 조회 빈이 2개 이상 - 문제
+### @Autowired는 타입(Type)으로 조회를 한다
+```
+@Autowired
+private DiscountPolicy discountPolicy
+```
+- 타입으로 조회하기 때문에 `ac.getBean(DiscountPolicy.class)`와 비슷한 동작을 함
+  - 물론 더 많은 기능을 제공함
+- 스프링 빈 조회시 타입으로 조회 할 때 만약 같은 타입의 빈이 2개 이상 있을 때 문제가 발생함  
+<br/>
+
+### 에시 상황
+- 같은 인터페이스를 상속받는 2개의 구현체(구현 클래스)들을 스프링 빈으로 선언 (@Component 사용)
+- 이 상태에서 필드의 인터페이스를 타입에 `의존관계 자동 주입(@Autowired)`를 붙여 실행
+- `NoUniqueBeanDefinitionException` 오류가 발생한다.
+```
+NoUniqueBeanDefinitionException: No qualifying bean of type
+'hello.core.discount.DiscountPolicy' available: expected single matching bean
+but found 2: fixDiscountPolicy,rateDiscountPolicy
+```
+- 친절하게도 하나의 빈을 기대했지만 `fixDiscountPolicy` `rateDiscountPolicy` 2개가 발견됬다고 알려줌
+- 하위 타입으로 지정해 해결할 수 있긴 하지만 이는 `DIP`를 위배하고 `유연성`이 떨어지게 된다.
+  - 또 이름만 다른 같은 타입의 스프링 빈이 2개 있다면 해결이 되지 않음
+- 수동으로 등록해서 해결해도 되지만 사실 `의존 관계 자동 주입`에 대한 문제해결 방법은 여러가지가 있음
