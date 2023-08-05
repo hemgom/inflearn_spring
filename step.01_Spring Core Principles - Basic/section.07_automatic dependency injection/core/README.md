@@ -107,4 +107,30 @@ class Data {
   }
 ```
 - `참고!` : 의존관계 자동 주입은 스프링 컨테이너가 관리하는 `스프링 빈`이어야 동작함
-  - `Member`같은 클래스에서 `@AutoWired`를 적용해봤자 아무 기능도 하지 않음
+  - `Member`같은 클래스에서 `@AutoWired`를 적용해봤자 아무 기능도 하지 않음  
+<br/>
+
+## 02. 옵션 처리
+주입할 스프링 빈이 없어도 동작해야 할 때가 있다.  
+그런데 `@Autowired`만 사용하면 `required`옵션의 기본값이 `true`로 되어있으므로 자동 주입 대상이 없으면 오류가 발생  
+<br/>
+
+### 자동 주입 대상을 옵션으로 처리하는 방법
+- `@Autowired(required = false)` : 자동 주입할 대상이 없으면 수정자 메서드 자체가 호출 되지 않음
+- `org.springframework.lang.@Nullalbe` : 자동 주입할 대상이 없으면 `null`이 입력됨
+- `Optional<T>` : 자동 주입할 대상이 없으면 `Optional.empty`가 입력됨  
+<br/>
+
+### 예제 코드 - AutoWiredTest
+- `Member`는 스프링 빈이 아님
+- `setBean1()`은 `Autowired(required = false)`이므로 호출 자체가 되지 않음
+  - 의존관계가 없기 때문에
+- 출력 결과
+```
+  setNoBean2 = null
+  setNoBean3 = Optional.empty
+```  
+<br/>
+
+- `참고!` : `@Nullable` `Optional`은 스프링 전반에 걸쳐 지원됨
+  - 생성자 자동 주입에서 특정 필드에만 사용해도 된다.
