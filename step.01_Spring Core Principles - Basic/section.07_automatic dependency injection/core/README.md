@@ -267,7 +267,7 @@ private DiscountPolicy discountPolicy
 - 스프링 빈 조회시 타입으로 조회 할 때 만약 같은 타입의 빈이 2개 이상 있을 때 문제가 발생함  
 <br/>
 
-### 에시 상황
+### 예시 상황
 - 같은 인터페이스를 상속받는 2개의 구현체(구현 클래스)들을 스프링 빈으로 선언 (@Component 사용)
 - 이 상태에서 필드의 인터페이스를 타입에 `의존관계 자동 주입(@Autowired)`를 붙여 실행
 - `NoUniqueBeanDefinitionException` 오류가 발생한다.
@@ -279,4 +279,75 @@ but found 2: fixDiscountPolicy,rateDiscountPolicy
 - 친절하게도 하나의 빈을 기대했지만 `fixDiscountPolicy` `rateDiscountPolicy` 2개가 발견됬다고 알려줌
 - 하위 타입으로 지정해 해결할 수 있긴 하지만 이는 `DIP`를 위배하고 `유연성`이 떨어지게 된다.
   - 또 이름만 다른 같은 타입의 스프링 빈이 2개 있다면 해결이 되지 않음
-- 수동으로 등록해서 해결해도 되지만 사실 `의존 관계 자동 주입`에 대한 문제해결 방법은 여러가지가 있음
+- 수동으로 등록해서 해결해도 되지만 사실 해당 문제에 대한 해결 방법은 여러가지가 있음  
+<br/>
+
+## 06. @Autowired 필드 명, @Qualifire, @Primary
+이전 강의에서 다룬 문제의 해결 방법에 대해서 알아보도록 하자!  
+<br/>
+
+### 조회 대상 빈이 2개 이상일 때
+- `@Autowired` 필드명 매칭
+- `@Qualifire` -> `@Qualifire`끼리 매칭 -> 빈 이름 매칭
+- `@Primary` 사용  
+<br/>
+
+### @Autowired - 필드명 매칭
+__기존 코드__
+```
+@Autowired
+private DiscountPolicy discountPolicy
+```
+__필드 명(변수 명)을 사용할 빈의 이름과 같게 변경__
+```
+@Autowired
+private DiscountPolicy rateDiscountPolicy
+```
+- `@Autowired`의 조회(매칭) 과정을 확인 해 보면
+  1. 필드(변수)의 타입이 일치하는 빈을 찾음
+  2. 만약 같은 타입의 빈이 2개 이상 이라면, 필드 명(변수 명)과 같은 이름의 빈을 찾음
+- 즉, `필드 명 매칭`은 타입으로 우선 매칭 시도를 한 후에 다수의 빈이 있다면 추가로 동작하는 기능이다.  
+<br/>
+
+### @Qualifire - 빈 등록시 붙여 줌
+`@Qualifire`는 빈 이름을 변경하는 기능이 아니라 `등록한 이름이 같은 @Qualifire`를 찾는 기능을 제공한다.
+__빈 등록시__
+```
+@Component
+@Qualifier("mainDiscountPolicy")
+public class RateDiscountPolicy implements DiscountPolicy {}
+```
+__생성자 자동 주입시__
+```
+@Autowired
+public OrderServiceImpl(MemberRepository memberRepository,
+              @Qualifier("mainDiscountPolicy") DiscountPolicy discountPolicy) {
+  this.memberRepository = memberRepository;
+  this.discountPolicy = discountPolicy;
+}
+```
+- `@Qualifire("mainDiscountPolicy)`를 붙여서 의존관계를 주입하면 같은 `@Qualifire("mainDiscountPolicy)`를 찾는다.
+  - 만약 같은 `@Qualifire("mainDiscountPolicy)`가 없다면 `"mainDiscountPolicy"`와 같은 빈 이름을 찾는다.
+  - 그래도 없다면 `NoSuchBeanDefinitionException`예외가 발생한다.
+- 하지만 명확하게 `@Qualifire`끼리 찾는 용도로 사용하는게 애매하지 않아 좋다.
+- `@Qualifire`는 예시 처럼 `생성자 주입`뿐만 아니라 `수정자 주입` `필드 주입`에도 사용 가능하다.
+  - 심지어 이전에 직접 빈을 등록할 때 사용했던 `@Bean` 사용시에도 `@Qualifire`를 사용할 수 있다.  
+<br/>
+
+### @Primary 사용
+`@Primary`는 `우선순위`를 정하는 방법이다. `@Autowired` 수행시 다수의 빈이 조회되면 `@Primary`가 우선 매칭 된다.
+__빈 등록시__
+```
+@Component
+@Primary
+public class RateDiscountPolicy implements DiscountPolicy {}
+```
+- 빈 등록시 `@Primary`를 붙여주기만 하면 된다.  
+<br/>
+
+### 그럼 @Qualifire vs @Primary ??
+1. 코드 작성 편함의 기준으로 보면
+   - `@Primary` 승! : `@Qualifire`의 경우 사용할 빈 등록과 의존관계 주입시 전부 `Qualifire`를 붙여줘야 함
+2. 둘을 모두 사용하는 경우의 우선순위는
+   - `@Qualifire` 승! : `@Qualifire`는 상세하게 동작하고 `@Primary`는 기본값 처럼 동작하기 때문
+     - 스프링은 자동보다는 `수동`을 그리고 넒은 범위의 선택권 보다는 `좁은 범위의 선택권`을 우선시 한다.
