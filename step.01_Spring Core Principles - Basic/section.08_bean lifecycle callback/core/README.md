@@ -108,13 +108,11 @@ close: http://hello-spring.dev
 public class NetworkClient {
   ...
   
-  @Override
   public void init() throws Exception {
     connect();
     call("초기화 연결 메시지");
   }
 
-  @Override
   public void close() throws Exception {
     disConnect();
   }
@@ -153,9 +151,61 @@ close + http://hello-spring.dev
 <br/>
 
 ### 종료 메서드 추론
-- `@Bean`의 `destroy()`속성에는 특별한 기능이 존재함
+- `@Bean`의 `destroyMethod`속성에는 특별한 기능이 존재함
   - 라이브러리는 대부분 `close`나 `shutdown`같은 이름의 종료 메서드를 사용
   - `@Bean`의 경우 기본 값으로 `(inferred)`(=추론)로 등록되어 있음
 - 추론 기능 : `close`나 `shutdown`을 이름으로 하는 메서드를 자동으로 호출함
   - 즉, `종료 메서드를 추론`해서 호출해 줌
-  - 만약 해당 `추론 기능`을 사용하지 않고 싶다면 `destroy = ""`처럼 빈 공백을 지정해 준다.
+  - 만약 해당 `추론 기능`을 사용하지 않고 싶다면 `destroy = ""`처럼 빈 공백을 지정해 준다.  
+<br/><br/><br/>
+
+## 04. 애노테이션 @PostConstruct, @PreDestroy
+### 초기화/소멸 메서드에 애노테이션 추가 - NetworkClient (테스트 코드)
+```
+public class NetworkClient {
+  ...
+  
+  @PostConstruct
+  public void init() throws Exception {
+    connect();
+    call("초기화 연결 메시지");
+  }
+
+  @PreDestroy
+  public void close() throws Exception {
+    disConnect();
+  }
+}
+```
+- 이전 방법처럼 `@Bean`에 초기화/소멸 메서드를 지정하지 않음, 간단하게 `@Bean`만 붙여 사용  
+<br/>
+
+### 출력 결과
+```
+생성자 호출, url = null
+NetworkClient.init
+connect: http://hello-spring.dev
+call: http://hello-spring.dev message = 초기화 연결 메시지
+13:33:10.029 [main] DEBUG org.springframework.context.annotation.AnnotationConfigApplicationContext - Closing 
+NetworkClient.close
+close + http://hello-spring.dev
+```  
+- 사실상 2개의 애노테이션만 사용하면 제일 편리하게 초기화와 소멸(종료)를 실행 할 수 있음  
+<br/>
+
+### @PostConstruc, @PreDestroy의 특징
+- 스프링(오피셜)에서 가장 권장하는 방법
+- 초기화/소멸 메서드에 애노테이션만 붙이면 되므로 매우 편리함
+- 스프링의에 종속적인 기술이 아니다.
+  - `JSR-250`이라는 `자바 표준`임, 즉 스프링이 아닌 다른 컨테이너에서도 동작함
+- 컴포넌트 스캔과 잘 어울림
+- 아쉬운 단점 하나는 외부 라이브러리에는 적용이 불가능
+  - 외부 라이브러리를 초기화/소멸해야 할 경우 이전에 배운 `@Bean`의 기능을 사용해야 함  
+<br/>
+
+### 정리 - 스프링의 빈 생명주기 콜백 방법
+- `@PostConstruct` 그리고 `@PreDestroy`를 최우선 적으로 사용하자!
+  - 스프링에서도 권장한다!
+- 만약 외부 라이브러리를 초기화/소멸해야 할 경우라면 `@Bean`의 기능을 사용하자!
+  - `@Bean`의 기능 : `initMethod` `destroyMethod`
+- 인터페이스 `InitializingBean` `DisposableBean`의 경우 최근에는 사용하지 않음
