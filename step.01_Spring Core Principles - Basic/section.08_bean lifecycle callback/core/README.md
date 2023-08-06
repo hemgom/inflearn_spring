@@ -33,8 +33,7 @@ call: null message = 초기화 연결 메시지
 <br/>
 
 ### 간단한 스프링 빈의 라이프사이클(싱글톤의 경우)
-`스프링 컨테이너 생성` -> `스프링 빈 생성` -> `의존관계 주입` -> `초기화 콜백` -> `사용`  
--> `소멸전 콜백` -> `스프링 종료`  
+`스프링 컨테이너 생성` -> `스프링 빈 생성` -> `의존관계 주입` -> `초기화 콜백` -> `사용` -> `소멸전 콜백` -> `스프링 종료`  
 - `초기화 콜백` : 빈이 생성되고, 빈의 의존관계 주입이 완료된 후 호출
 - `소멸전 콜백` : 빈이 소멸되기 직전에 호출
 - 스프링 빈은 다양한 방식으로 생명주기 콜백을 지원  
@@ -51,4 +50,50 @@ call: null message = 초기화 연결 메시지
 ### 스프링은 크게 3가지 방법으로 빈 생명주기 콜백을 지원한다
 - `인터페이스`(InitializingBean, DisposableBean)
 - `설정 정보`에 초기화 메서드, 종료 메서드 지정
-- @PostConstruct, @PreDestroy `애노테이션 지원`
+- @PostConstruct, @PreDestroy `애노테이션 지원`  
+<br/><br/><br/>
+
+## 02. 인터페이스 InitializingBean, DisposableBean
+### 코드 수정 - NetworkClient (테스트 코드)
+```
+public class NetworkClient implements InitializingBean, DisposableBean {
+  ...
+  
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    connect();
+    call("초기화 연결 메시지");
+  }
+
+  @Override
+  public void destroy() throws Exception {
+    disConnect();
+  }
+}
+```
+- `InitializingBean`은 `afterPropertiesSet()`으로 `초기화`를 지원함
+- `DisposableBean`은 `destroy()`로 `소멸`을 지원함  
+<br/>
+
+### 출력 결과
+```
+생성자 호출, url = null
+NetworkClient.afterPropertiesSet
+connect: http://hello-spring.dev
+call: http://hello-spring.dev message = 초기화 연결 메시지
+13:24:49.043 [main] DEBUG org.springframework.context.annotation.AnnotationConfigApplicationContext - Closing 
+NetworkClient.destroy
+close: http://hello-spring.dev
+```
+- 출력을 확인하면 의존관계 주입이 완료된 이후에 메서드가 적절하게 호출된걸 알 수 있음
+- `close()`로 스프링 컨테이너 종료가 호출되자 `소멸 메서드(destroy())`가 호출됨을 알 수 있음  
+<br/>
+
+### 초기화 및 소멸 인터페이스의 단점
+- 해당 인터페이스들은 `스프링 전용 인터페이스`임, 즉 `스프링 전용 인터페이스에 의존`하는 성향을 가짐
+- 초기화 및 소멸 메서드의 `이름을 변경할 수 없음`
+- 개발자가 코드를 직접 고칠 수 없는 `외부 라이브러리`에 적용이 불가능함  
+<br/>
+
+- `참고!` : 인터페이스를 사용한 초기화 및 소멸 방법은 `스프링 초창기 기술`이다.
+  - 즉, 현재는 더 나은 기술들이 있기에 거의 사용하지 않는 기술임
