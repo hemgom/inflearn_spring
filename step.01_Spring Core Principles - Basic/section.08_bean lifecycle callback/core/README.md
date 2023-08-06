@@ -96,4 +96,66 @@ close: http://hello-spring.dev
 <br/>
 
 - `참고!` : 인터페이스를 사용한 초기화 및 소멸 방법은 `스프링 초창기 기술`이다.
-  - 즉, 현재는 더 나은 기술들이 있기에 거의 사용하지 않는 기술임
+  - 즉, 현재는 더 나은 기술들이 있기에 거의 사용하지 않는 기술임  
+<br/><br/><br/>
+
+## 03. 빈 등록 초기화, 소멸 메서드 지정
+설정 정보에 `@Bean(initMethod = "init", destroyMethod = "close")`같이 초기화/소멸 메서드를 지정 가능하다.   
+<br/>
+
+### 설정 정보를 사용하도록 수정 - NetworkClient (테스트 코드)
+```
+public class NetworkClient {
+  ...
+  
+  @Override
+  public void init() throws Exception {
+    connect();
+    call("초기화 연결 메시지");
+  }
+
+  @Override
+  public void close() throws Exception {
+    disConnect();
+  }
+}
+```
+### 설정 정보에 초기화/소멸 메서드 지정 - BeanLifeCycleTest
+```
+@Configuration
+static class LifeCycleConfig {
+
+  @Bean(initMethod = "init", destroyMethod = "close")
+  public NetworkClient networkClient() {
+    NetworkClient networkClient = new NetworkClient();
+    networkClient.setUrl("http://hello-spring.dev");
+    return networkClient;
+  }
+}
+```
+### 출력 결과
+```
+생성자 호출, url = null
+NetworkClient.init
+connect: http://hello-spring.dev
+call: http://hello-spring.dev message = 초기화 연결 메시지
+13:33:10.029 [main] DEBUG org.springframework.context.annotation.AnnotationConfigApplicationContext - Closing 
+NetworkClient.close
+close + http://hello-spring.dev
+```  
+<br/>
+
+### 설정 정보 사용 특징
+- 메서드의 이름을 자유롭게 변경 가능하다.
+- 스프링 빈이 스프링 코드에 의존하지 않음
+- 코드가 아닌 `설정 정보`를 사용
+  - 코드를 고칠 수 없는 `외부 라이브러리`에도 초기화/소멸 메서드를 적용가능!  
+<br/>
+
+### 종료 메서드 추론
+- `@Bean`의 `destroy()`속성에는 특별한 기능이 존재함
+  - 라이브러리는 대부분 `close`나 `shutdown`같은 이름의 종료 메서드를 사용
+  - `@Bean`의 경우 기본 값으로 `(inferred)`(=추론)로 등록되어 있음
+- 추론 기능 : `close`나 `shutdown`을 이름으로 하는 메서드를 자동으로 호출함
+  - 즉, `종료 메서드를 추론`해서 호출해 줌
+  - 만약 해당 `추론 기능`을 사용하지 않고 싶다면 `destroy = ""`처럼 빈 공백을 지정해 준다.
