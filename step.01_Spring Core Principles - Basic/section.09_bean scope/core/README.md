@@ -303,4 +303,72 @@ static class ClientBean {
 
 ### HTTP request 요청 당 각각 할당되는 request 스코프
 ![img_8.jpg](img_8.jpg)
-- 나머지 웹 스코프들도 `범위만 다르지` 동작 방식은 다 비슷하다.
+- 나머지 웹 스코프들도 `범위만 다르지` 동작 방식은 다 비슷하다.  
+<br/><br/><br/>
+
+## 06. request 스코프 예제 만들기
+### 웹 환경 추가
+웹 스코프는 `웹 환경`에서만 동작한다. 그러니 라이브러리를 추가해 `웹 환경`을 만들어주자!  
+<br/>
+
+#### build.gradle에 라이브러리 추가
+```
+//web 라이브러리 추가
+implementation 'org.springframework.boot:spring-boot-starter-web'
+```
+- 라이브러리 추가 후 `hello.core.CoreApplication`의 `main`메서드를 실행하면 웹 애플리케이션이 실행된다.  
+<br/>
+
+- `참고!` : `spring-boot-starter-web` 라이브러리를 추가하면 스프링 부트는 내장 톰켓 서버를 활용해 웹 서버와 스프링을 함께 실행시킴
+- `참고!` : 스프링 부트는 웹 라이브러리가 없으면 `AnnotationConfigApplicationContext`을 기반으로 애플리케이션을 구동함
+  - 웹 라이브러리가 추가되 웹과 관련된 추가 설정과 환경들이 필요하므로  
+<br/>
+
+### request 스코프 예제 개발
+`request 스코프`는 여러 HTTP 요청이 오면 정확하게 어떤 요청이 남긴 로그인지 구분할 때 사용하기 좋음
+- 기대하는 공통 포멧 : `[UUID][requestURL] {message}`
+- UUID를 사용해서 HTTP 요청을 구분
+- requestURL 정보도 추가로 넣어서 어떤 URL을 요청해서 남은 로그인지 확인  
+<br/>
+
+#### 예제 코드
+- `class MyLogger` : 로그를 출력하기 위한 클래스
+  - `@Scope(value = "request")`를 사용해 `request 스코프`로 지정함
+    - 해당 빈은 HTTP 요청 당 하나씩 생성되며, 요청이 끝나는 시점에 소멸한다.
+  - 해당 빈은 새성되는 시점에 자동으로 `@PostConstruct`초기화 메서드를 사용해 `uuid`를 생성해 저장해둠
+    - 해당 빈이 HTTP 요청마다 생성되므로 `uuid`를 통해 다른 HTTP 요청과 구분 가능
+  - 해당 빈이 소멸되는 시점에 `@PreDestroy`를 사용해 소멸(종료) 메시지를 남김
+  - `requestURL`은 빈 생성 시점에 알 수 없어 외부에서 `setter`로 입력 받음  
+<br/>
+
+- `class LogDemoController` : 로거가 잘 작동하는지 확인하는 테스트용 컨트롤러
+  - `HttpServletRequest`를 통해 요청 `URL`을 받음
+    - `requestURL`의 값 `http://localhost:8080/log-demo`
+  - `requestURL`의 값을 `myLogger`에 저장함
+    - `myLogeer`의 경우 HTTP 요청 당, 각각 구분되어 값이 섞일 일이 없음
+  - 컨트롤러에서 `controller test`라는 로그를 남김  
+<br/>
+
+- `참고!` : `requestURL`을 `MyLogger에 저장하는 부분`은 컨트롤러 보다 공통 처리가 가능한 `스프링 인터셉터`나 `서블릿 필터`를 활용하는 것이 좋다  
+<br/>
+
+- `class LogDemoService` : 비즈니스 로직이 있는 서비스 계층
+  - `request scope`를 사용하지 않고 파라미터로 모든 정보를 서비스 계층에 넘기면, 파라미터가 많아서 지저분해짐
+  - `requestURL` 같은 `웹과 관련된 정보`가 웹과 관련없는 서비스 계층까지 넘어가게 됨
+    - 웹과 관련된 부분은 컨트롤러까지만 사용해야 함
+    - 서비스 계층은 웹 기술에 종속되지 않고, 가급적 순수하게 유지하는 것이 유지보수 관점에서 좋음
+  - `request scope`의 `MyLogger` 덕분에 불필요한 파라미터 정보를 넘기지 않음
+    - `MyLogger 멤버변수`에 저장해서 코드와 계층을 깔끔하게 유지할 수 있음  
+<br/>
+
+### 예제 코드 실행
+__원하는 출력 결과__
+```
+[d06b992f...] request scope bean create
+[d06b992f...][http://localhost:8080/log-demo] controller test
+[d06b992f...][http://localhost:8080/log-demo] service id = testId
+[d06b992f...] request scope bean close
+```
+- 하지만 실제 결과는 애플리케니션 실행 시점에 오류가 발생한다.
+- 스프링 애플리케이션 실행 시점에 `싱글톤 빈`은 생성해서 주입이 가능하나 `request 스코프 빈`은 아직 생성조차 되지 않음
+  - `request 스코프 빈`은 실제 고객의 `HTTP 요청`이 있어야 생성되기 때문이다.
