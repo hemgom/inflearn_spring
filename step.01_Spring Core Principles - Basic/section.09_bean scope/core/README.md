@@ -41,7 +41,7 @@ PrototypeBean HelloBean() {
 <br/>
 
 ### 빈 요청 - 싱글톤 스코프
-![img.jpg](img.jpg)
+![img.jpg](img/img.jpg)
 1. 빈을 스프링 컨테이너에 요청
 2. 스프링 컨테이너는 생성 당시에 생성해둔 스프링 빈을 반환(모두 같은 인스턴스)
    - 그렇기에 이후 같은 스프링 빈에 대한 요청이 와도 같은 인스턴스의 스프링 빈을 반환함  
@@ -49,9 +49,9 @@ PrototypeBean HelloBean() {
 
 ### 빈 요청 - 프로토타입 스코프
 __요청 과정(그림.1)__
-![img_1.jpg](img_1.jpg)
+![img_1.jpg](img/img_1.jpg)
 __반환 과정(그림.2)__
-![img_2.jpg](img_2.jpg)
+![img_2.jpg](img/img_2.jpg)
 1. 빈을 스프링 컨테이너에 요청
 2. 스프링 컨테이너는 요청 시점에 프로토타입 빈을 생성하고 필요한 의존관계를 주입함
    - 여기까지가 `그림.1`의 과정
@@ -111,7 +111,7 @@ org.springframework.context.annotation.AnnotationConfigApplicationContext - Clos
 
 ### 프로토타입 빈(직접 요청) - SingletonWithPrototypeTest1(prototypeFind())
 __첫 번째 요청__
-![img_3.jps](img_3.jpg)
+![img_3.jps](img/img_3.jpg)
 1. `클라이언트 A`는 스프링 컨테이너에 프로토타입 빈을 요청
 2. 스프링 컨테이너는 새로운 프로토타입 빈을 생성해서 반환(x01), 해당 빈의 `count` 값은 `0`이다
 3. 클라이언트는 조회한 프로토타입 빈에 `addCount()`를 호출하면서 `count`를 `+1`한다.
@@ -119,14 +119,14 @@ __첫 번째 요청__
 <br/>
 
 __두 번째 요청__
-![img_4.jpg](img_4.jpg)
+![img_4.jpg](img/img_4.jpg)
 - 첫 번째 요청과 같은 수행을 한다. 다른 점은 프로토타입 빈의 인스턴스가 다르다.
 - 최종적으로 `프로토타입 빈(x02)`의 `count`는 `1`이 된다.  
 <br/>
 
 ### 프로토타입 빈(with 싱글톤) - SingletonWithPrototypeTest1(singletonClientUsePrototype())
 __싱글톤에서 프로토타입 빈 사용(1)__
-![img_5.jpg](img_5.jpg)
+![img_5.jpg](img/img_5.jpg)
 - `clientBean`은 싱글톤이다. 보통 스프링 컨테이너 생성시점에 생성 및 의존관계 주입이 이루어진다.
 1. `clientBean`은 자동 의존관계 주입을 사용함.
    -주입 시점에 스프링 컨테이너에 프로토타입 빈을 요청
@@ -135,7 +135,7 @@ __싱글톤에서 프로토타입 빈 사용(1)__
 - `clientBean`은 내부 필드에 프로토타입 빈을 보관 중(정확히는 참조값을 보관)  
 
 __싱글톤에서 프로토타입 빈 사용(2)__
-![img_6.jpg](img_6.jpg)
+![img_6.jpg](img/img_6.jpg)
 - `클라이언트A`는 `clientBean`을 스프링 컨테이너에 요청해서 받음
   - 싱글톤이므로 항상 같은 인스턴스의 `clientBean`을 반환 받음
 3. `클라이언트A`가 `clientBean.logic()`을 호출
@@ -143,7 +143,7 @@ __싱글톤에서 프로토타입 빈 사용(2)__
    - 현재 `count` 값은 `1`  
 
 __싱글톤에서 프로토타입 빈 사용(3)__
-![img_7.jpg](img_7.jpg)
+![img_7.jpg](img/img_7.jpg)
 - `클라이언트B`가 `clientBean`을 스프링 컨테이너에 요청
   - `clientBean`은 싱글톤이므로 항상 같은 인스턴스의 `clientBean`을 반환
 - 중요한 점은 `clientBean`이 내부 필드에 보관하고 있는 프로토타입 빈(참조값)은 이미 주입이 끝난 빈이다.
@@ -302,7 +302,7 @@ static class ClientBean {
 <br/>
 
 ### HTTP request 요청 당 각각 할당되는 request 스코프
-![img_8.jpg](img_8.jpg)
+![img_8.jpg](img/img_8.jpg)
 - 나머지 웹 스코프들도 `범위만 다르지` 동작 방식은 다 비슷하다.  
 <br/><br/><br/>
 
@@ -421,4 +421,60 @@ public class LogDemoService {
 - `ObjectProvider.getObject()`를 호출하시는 시점
   - HTTP 요청이 진행 중, `request scope 빈`의 생성이 정상 처리됨
 - `ObjectProvider.getObject()`를 `LogDemoController` `LogDemoService`에서 각각 따로 호출하면?
-  - 같은 HTTP 요청이라면 같은 스프링 빈이 반환됨!(물론 육안 구분은...)
+  - 같은 HTTP 요청이라면 같은 스프링 빈이 반환됨!(물론 육안 구분은...)  
+<br/><br/><br/>
+
+## 08. 스코프와 프록시
+이번엔 `프록시 방식`을 사용해 문제를 해결해 보자!  
+```
+@Component
+@Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+public class MyLogger {
+  ...
+}
+```
+- 핵심 : `proxyMode = ScopedProxyMode.TARGET_CLASS`를 추가
+  - 적용 대상이 클래스면 `TARGET_CLASS`선택
+  - 적용 대상이 인터페이면 `TARGET_INTERFACES`선택
+- `MyLogger`의 가짜 프록시 클래스를 만들어두고 `HTTP request`와 상관없이 가짜 프록시 클래스를 다른 빈에 미리 주입 가능  
+<br/>
+
+### 웹 스코프와 프록시 동작 원리
+__MyLogger 확인__
+```
+System.out.println("myLogger = " + myLogger.getClass());
+```
+__출력 결과__
+```
+myLogger = class hello.core.common.MyLogger$$EnhancerBySpringCGLIB$$b68b726d
+```  
+<br/>
+
+#### CGLIB라는 라이브러리로 내 클래스를 상속 받은 가짜 프록시 객체를 만들어 주입함
+![img_9.jpg](img/img_9.jpg)
+1. `@Scope`의 `proxyMode = ScopedProxyMode.TARGET_CLASS)`로 설정
+   - 스프링 컨테이너는 `CGLIB`라는 바이트코드를 조작하는 라이브러리를 사용해서, MyLogger를 상속받은 `가짜 프록시 객체를 생성`함
+2. 우리가 등록한 MyLogger 클래스가 아니라 `MyLogger$$EnhancerBySpringCGLIB`이라는 클래스로 만들어진 객체가 대신 등록된 것
+3. 스프링 컨테이너에 `"myLogger"`라는 이름으로 진짜 대신에 가짜 프록시 객체를 등록함
+4. 결과적으로 의존관계 주입시 가짜 프록시 객체가 주입됨  
+<br/>
+
+#### 동작 정리
+- `CGLIB` 라이브러리로 내 클래스를 상속 받은 가짜 프록시 객체를 만들어 주입함
+- 가짜 프록시 객체는 실제 HTTP 요청이 들어오면 그 때 내부에서 실제 빈을 요청하는 위임 로직이 들어있음
+  - 가짜 프록시 객체는 그냥 가짜이며 내부에 단순한 위임 로직만 있음
+  - 싱글톤 처럼 동작함  
+<br/>
+
+#### 특징 정리
+- 프록시 객체로 인해 클라이언트는 싱글톤 빈을 사용하듯이 편리하게 `request scope`를 사용할 수 있음
+- 어떤 방법을 사용해도 되지만 핵심은 `진짜 객체 조회를 필요 시점까지 지연처리`한다는 것이다.
+- 단순히 `애노테이션 설정 변경`만으로 원본 객체를 대체 할 수 있음
+  - 이건 `다형성`과 `DI 컨테이너`가 가진 큰 강점!
+- 반드시 웹 스코프가 아니더라도 프록시는 사용 가능함  
+<br/>
+
+#### 주의
+- 싱글톤처럼 동작하나 다른 동작이므로 주의에서 사용할 필요가 있음
+- 특별한 `scope`는 꼭 필요한 곳에만 최소화해 사용해야 함
+  - 무분별한 사용은 유지보수의 난이도를 올릴 뿐
