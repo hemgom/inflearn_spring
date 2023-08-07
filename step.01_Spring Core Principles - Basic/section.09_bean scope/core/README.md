@@ -371,4 +371,54 @@ __원하는 출력 결과__
 ```
 - 하지만 실제 결과는 애플리케니션 실행 시점에 오류가 발생한다.
 - 스프링 애플리케이션 실행 시점에 `싱글톤 빈`은 생성해서 주입이 가능하나 `request 스코프 빈`은 아직 생성조차 되지 않음
-  - `request 스코프 빈`은 실제 고객의 `HTTP 요청`이 있어야 생성되기 때문이다.
+  - `request 스코프 빈`은 실제 고객의 `HTTP 요청`이 있어야 생성되기 때문이다.  
+<br/><br/><br/>
+
+## 07. 스코프와 Provider
+문제 해결을 위해 이전에 배운 `Provider`을 사용해보자!  
+<br/>
+
+### 예제 코드 - ObjectProvider 추가
+__LogDemoController__
+```
+@Controller
+@RequiredArgsConstructor
+public class LogDemoController {
+
+    private final LogDemoService logDemoService;
+    private final ObjectProvider<MyLogger> myLoggerProvider;
+
+    @RequestMapping("log-demo")
+    @ResponseBody
+    public String logDemo(HttpServletRequest request) {
+        String requestURL = request.getRequestURL().toString();
+        MyLogger myLogger = myLoggerProvider.getObject();
+        myLogger.setRequestURL(requestURL);
+
+        myLogger.log("controller test");
+        logDemoService.logic("testId");
+        return "OK";
+    }
+}
+```
+__LogDemoService__
+```
+@Service
+@RequiredArgsConstructor
+public class LogDemoService {
+
+    private final ObjectProvider<MyLogger> myLoggerProvider;
+
+    public void logic(String id) {
+        MyLogger myLogger = myLoggerProvider.getObject();
+        myLogger.log("service id = " + id);
+    }
+}
+```
+- 이제 main() 메서드로 스프링을 실행하고, 웹 브라우저에 `http://localhost:8080/log-demo`를 입력
+  - 드디어 원하는 결과가 출력된다!
+- `ObjectProvider`덕분에 `ObjectProvider.getObject()`를 호출하는 시점까지 `request scope 빈`의 생성을 지연가능
+- `ObjectProvider.getObject()`를 호출하시는 시점
+  - HTTP 요청이 진행 중, `request scope 빈`의 생성이 정상 처리됨
+- `ObjectProvider.getObject()`를 `LogDemoController` `LogDemoService`에서 각각 따로 호출하면?
+  - 같은 HTTP 요청이라면 같은 스프링 빈이 반환됨!(물론 육안 구분은...)
