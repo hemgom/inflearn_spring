@@ -165,4 +165,122 @@ __싱글톤에서 프로토타입 빈 사용(3)__
 
 - `참고!` : 다수의 `빈`에서 같은 프로토타입 빈을 주입 받으면?
   - 주입 시점에 각각 인스턴스가 다른 새로운 프로토타입 빈이 생성됨
-  - 물론 이미 주입 시점에 생성되었기에 사용할 때마다 새로 생성되는 것은 아님
+  - 물론 이미 주입 시점에 생성되었기에 사용할 때마다 새로 생성되는 것은 아님  
+<br/><br/><br/>
+
+## 04. 프로토타입 스코프 - 싱글톤 빈과 함께 사용시 Provider로 문제 해결
+싱글톤 빈과 함께 프로토타입 빈을 사용할 때  
+어떻게 하면 사용(요청)할 때마다 새로운 프로토타입 빈을 생성할 수 있을까?  
+<br/>
+
+### 스프링 컨테이너에 요청(비추천 방식)
+가장 간단한 방법으로 싱글톤 빈이 프로토타입을 사용할 때마다 스프링 컨테이너에 새로 요청한다.  
+<br/>
+
+__핵심 코드__
+```
+@Scope("singleton")
+static class ClientBean {
+    @Autowired
+    private ApplicationContext ac;
+
+    public int logic() {
+        PrototypeBean prototypeBean = ac.getBean(PrototypeBean.class);
+        prototypeBean.addCount();
+        int count = prototypeBean.getCount();
+        return count;
+    }
+}
+```
+- `ac.getBean()`을 통해 항상 새로운 프로토타입 빈이 생성되는 것을 확인 가능함
+- `Dependency Lookup(DL)` : 의존관계를 외부에서 주입(DI) 받는게 아니라 필요한 의존관계를 직접 찾는 것
+- 하지만 스프링의 애플리케이션 컨텍스트 전체를 주입받게 되면?
+  - 스프링 컨테이너에 종속적인 코드가 되어버림
+  - 단위 테스트가 어려워짐
+- 당장 필요한 기능은 지정한 프로토타입 빈을 스프링 컨테이너에서 대신 찾아주는 기능이다.
+  - `DL`정도의 기능이 지금 필요하다!
+  - 사실 놀랍게도 스프링에는 이미 이러한 기능이 준비되어 있다.  
+<br/>
+
+### ObjectFactory, ObjectProvider
+지정한 빈을 컨테이너에서 대신 찾아주는 `DL 서비스`를 제공하는 것이 바로 `ObjectProvider` 
+- 과거에 사용한 `ObjectFactory`에 편의 기능을 추가해 만들어진 것이 `ObjectProvider`  
+<br/>
+
+__핵심 코드__
+```
+@Scope("singleton")
+static class ClientBean {
+    @Autowired
+    private ObjectProvider<PrototypeBean> prototypeBeanProvider;
+
+    public int logic() {
+        PrototypeBean prototypeBean = prototypeBeanProvider.getObject();
+        prototypeBean.addCount();
+        nt count = prototypeBean.getCount();
+        return count;
+    }
+}
+```
+- `prototypeBeanProvider.getObject()`을 통해 항상 새로운 프로토타입 빈이 생성된다.
+- `ObjectProvider`의 `getObject()`를 호출하면 내부에선 스프링 컨테이너를 통해 해당 빈을 찾아 반환함
+  - 딱 `DL` 기능을 함
+- 스프링이 제공하는 기능을 사용하지만, 기능이 단순해 `단위테스트 생성`이나 `mock코드 만들기`는 훨씬 쉬워짐  
+<br/>
+
+#### 특징
+- `ObjectFactory` : 기능이 단순함
+- `ObjectProvider` : ObjectFactory 상속, 옵션, 스트림 처리등 편의 기능이 많음
+- 둘 다 별도의 라이브러리 필요 없음, 스프링에 의존  
+<br/>
+
+### JSR-330 Provider
+마지막 방법은 `JSR-330 자바 표준`을 사용하는 방법이다.
+- 해당 방법을 사용하기 위해 `gradle`에 아래의 라이브러리를 스프링부트 버전에 맞게 추가해준다.
+  - 스프링부트 3.0 미만
+    - `javax.inject:javax.inject:1` 라이브러리 추가해야 한다.
+  - 스프링부트 3.0 이상
+    - `jakarta.inject:jakarta.inject-api:2.0.1` 라이브러리를 추가해야 한다.
+- `Provider` 사용시 라이브러리를 잘 확인하도록 하자!  
+<br/>
+
+__핵심 코드__
+```
+@Scope("singleton")
+static class ClientBean {
+    @Autowired
+    private Provider<PrototypeBean> provider;
+
+    public int logic() {
+        PrototypeBean prototypeBean = provider.get();
+        prototypeBean.addCount();
+        nt count = prototypeBean.getCount();
+        return count;
+    }
+}
+```
+- `provider.get()`을 통해서 항상 새로운 프로토타입 빈이 생성됨
+- `provider`의 `get()`을 호출하면 내부에선 스프링 컨테이너를 통해 해당 빈을 찾아 반환함(DL)
+- 자바 표준이면서 기능이 단순하므로 `단위 테스트 생성` `mock 코드 만들기`가 훨씬 쉬워짐  
+<br/>
+
+#### 특징
+- `get()` 하나로 기능이 매우 단순
+- 별도의 라이브러리가 불필요
+- 자바 표준이므로 스프링이 아닌 다른 컨테이너에서도 사용가능  
+<br/>
+
+#### 정리
+- 매번 사용할 때 마다 의존관계 주입이 완료된 새로운 객체가 필요하면 프로토타입 빈을 사용
+- 사실 실무에서는 싱글톤 빈으로 대부분의 문제를 해결할 수 있어 사용할 일은 매우 드물다.
+- `ObjectProvider` `JSR330 Provider` 등은 프로토타입 뿐만 아니라 `DL이 필요한 경우`는 언제든지 사용가능  
+<br/>
+
+- `참고!` : `JSR-330 Provider` VS `ObjectProvider`
+  - `ObjectProvider` : `DL`을 위한 편의 기능을 많이 제공, 스프링 외에 별도의 의존관계 추가가 불필요해 편리
+  - `JSR-330 Provider` : 코드를 스프링이 아닌 `다른 컨테이너에서도 사용할 수 있어야` 한다면
+  - `스프링과 자바표준이 서로 겹치는` 다른 기능들도 많이 존재함
+    - 대부분 `스프링`이 더 다양하고 많은 편리기능을 제공하고 있음
+    - 특별히 다른 컨테이너를 사용하는 것이 아니라면 스프링이 제공하는 기능을 사용하는게 좋음
+- `참고!` : 스프링이 제공하는 메서드에 `@Lookup`을 사용하는 방법도 있음
+  - 단 앞서 언급된 방법들로도 충분하고, 고려해햐할 내용이 많음
