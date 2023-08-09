@@ -68,4 +68,29 @@
 
 #### fragment
 - html 내부 북마크 등에 사용
-- 서버에 전송하는 정보가 아님
+- 서버에 전송하는 정보가 아님  
+<br/><br/><br/>
+
+## 02. 웹 브라우저 요청 흐름
+1. `URL`입력
+	- ex) https://www.google.com/search?q=hello&hl=ko
+2. `DNS` 조회(`www.google.com`) - `IP`정보 획득
+3. `PORT`조회(`https`의 경우 `443`) - `PORT`정보 획득
+4. HTTP 요청 메시지 생성
+__예시__
+```
+GET /search?q=hello&hl=ko HTTP/1.1
+Host: www.google.com
+```
+5. HTTP 메시지 전송
+	- 생성된 메시지를 `SOCKET`라이브러리를 통해 전달
+		- A : TCP/IP 연결(IP, PORT)
+		- B : 데이터 전달
+	- `TCP/IP 패킷`생성 (HTTP 메시지 포함)
+	- 네트워크 인터페이스를 통해 인터넷망으로 송출
+6. 요청 패킷이 목적지 서버에 도착
+	- 서버에서 패킷을 제거 `HTTP 메시지 확인`
+	- 클라이언트에게 전달할 `HTTP 응답 메시지` 작성 후 전송
+7. 클라이언트가 패킷 제거후 `HTTP 응답 메시지` 확인
+	- 메시지 속 `HTML`코드를 렌더링
+	- 우리가 아는 웹 검색 결과 화면이 출력됨!
