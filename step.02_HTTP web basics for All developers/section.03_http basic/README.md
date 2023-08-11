@@ -150,28 +150,28 @@
 #### HTTP 요청 메시지 - 예시
 ```
 GET /search?q=hello&hl=ko HTTP/1.1	[시작 라인]
-Host: www.google.com				[헤더]
-									[공백 라인]
+Host: www.google.com		[헤더]
+				[공백 라인]
 ```
 - 물론 `요청 메시지`의 경우도 `message body`를 가질 수 있음  
 <br/>
 
 #### HTTP 응답 메시지 - 예시
 ```
-HTTP/1.1 200 OK							[시작 라인]
+HTTP/1.1 200 OK				[시작 라인]
 Content-Type: text/html;charset=UTF-8	[헤더]
-Content-Length: 3423					[/헤더]
-										[공백 라인]
-<html>									[message body]
+Content-Length: 3423			[/헤더]
+					[공백 라인]
+<html>					[message body]
 <body>...</body>
-</html>									[/message body]
+</html>					[/message body]
 ```
 __[공식 스펙](https://tools.ietf.org/html/rfc7230#section-3)__ 
 ```
 HTTP-message   = start-line
-			     *( header-field CRLF )
-				 CRLF
-				 [ message-body ]
+		*( header-field CRLF )
+		CRLF
+		[ message-body ]
 ```  
 <br/>
 
