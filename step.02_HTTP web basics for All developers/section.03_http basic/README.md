@@ -150,8 +150,8 @@
 #### HTTP 요청 메시지 - 예시
 ```
 GET /search?q=hello&hl=ko HTTP/1.1	[시작 라인]
-Host: www.google.com		[헤더]
-				[공백 라인]
+Host: www.google.com                   [헤더]
+                                                [공백 라인]
 ```
 - 물론 `요청 메시지`의 경우도 `message body`를 가질 수 있음  
 <br/>
