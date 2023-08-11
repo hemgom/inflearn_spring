@@ -135,4 +135,88 @@
 - 정말 같은 시간에 딱 맞춰 발생하는 대용량 트래픽에 대한 업무
 	- ex) 선착순 이벤트, 수강 신청, 콘서트 티켓 예매 등
 	- `HTTP 지속 연결`이 의미 없을 정도, 정말로 그 시간에 딱 맞춰 다수의 클라이언트가 접속하기 때문에 
-- 즉,  `Stateless`하게 개발을 해서 `서버증설`을 통해 대응 할 수 있어야 함!
+- 즉,  `Stateless`하게 개발을 해서 `서버증설`을 통해 대응 할 수 있어야 함!  
+<br/><br/><br/>
+
+## 05. HTTP 메시지
+### HTTP 메시지 구조
+위에서 순차적으로 보면 아래와 같은 구조로 작성된다.
+1. `start-line` : 시작 라인
+2. `header` : 헤더
+3. `empty line` : 공백 라인 (CRLF), 반드시 필요함!
+4. `message body` : 메시지 내용 (HTML)  
+<br/>
+
+#### HTTP 요청 메시지 - 예시
+```
+GET /search?q=hello&hl=ko HTTP/1.1	[시작 라인]
+Host: www.google.com				[헤더]
+									[공백 라인]
+```
+- 물론 `요청 메시지`의 경우도 `message body`를 가질 수 있음  
+<br/>
+
+#### HTTP 응답 메시지 - 예시
+```
+HTTP/1.1 200 OK							[시작 라인]
+Content-Type: text/html;charset=UTF-8	[헤더]
+Content-Length: 3423					[/헤더]
+										[공백 라인]
+<html>									[message body]
+<body>...</body>
+</html>									[/message body]
+```
+__[공식 스펙](https://tools.ietf.org/html/rfc7230#section-3)__ 
+```
+HTTP-message   = start-line
+			     *( header-field CRLF )
+				 CRLF
+				 [ message-body ]
+```  
+<br/>
+
+### 시작 라인 - start-line
+#### 요청 메시지 (request-line) 구조
+- __request-line__ = `method` `SP(공백)`	`request-target` `SP` `HTTP-version` `CRLF(엔터)`
+	- `method` : `HTTP 메서드`를 적음, `GET` `PUT` `DELETE` `POST` 등
+		- 서버가 수행해야 할 동작을 지정함
+		- `GET(리소스 조회)` `POST(요청 내역 처리)`
+	- `request-target` : 요청 대상을 적음
+		- `absolute-path[?query]` : `절대경로[?쿼리]`
+		- `absolute-path(절대 경로)` : `"/"`로 시작하는 경로
+		- __참고!__ : `*` `http://...?x=y` 와 같이 다른 유형의 경로지정 방법 있음
+	- `HTTP-version` : HTTP의 버전을 적음  
+<br/>
+
+#### 응답 메시지 (status-line) 구조
+- __status-line__ = `HTTP-version` `SP` `status-code` `SP` `reason-phrase` `CRLF`
+	- `status-code` : HTTP 상태 코드 (요청에 대한 성공/실패를 나타냄)
+		- __200__ : 성공
+		- __400__ : 클라이언트 요청 오류
+		- __500__ : 서버 내부 오류
+	- `reason-phrase` : __이유 문구__(상태코드에 대한 짧은 설명)  
+<br/>
+
+### HTTP 헤더
+#### 구조
+- __header-field__ = `field-name` `":"` `OWS` `field-value` `OWS` <sub>__(OWS:띄어쓰기 허용)__</sub>
+	- `주의!` : `필드명 :`은 안 됨, 반드시 `필드명:` 이어야함
+		- 필드명 이후 `":"`은 공백없이 필드명에 붙여써야 함
+	- `field-name` : 영대소문자 구분 없음
+	- `field-value` : 영대소문자 구분 있음  
+<br/>
+
+#### 용도
+- HTTP 전송에 필요한 `모든 부가정보`
+	- ex) 메시지 바디의 내용, 메시지 바디의 크기, 압축, 인증, 요청 클라이언트(브라우저) 정보, 서버 애플리케이션 정보, 캐시 관리 정보 등
+	- `message body`를 제외한 `필요 메타 데이터 정보`가 다 들어 있다고 봐도 무방!
+- [표준 헤더](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)는 정말 많음!
+- 필요시 임의 헤더를 추가 가능
+	- ex) helloworld: HiHi
+	- 물론 사용을 위해선 클라이언트와 서버간 `약속`이 필요  
+<br/>
+
+### HTTP 메시지 바디
+#### 용도
+- 실제 전송할 데이터
+- `HTML 문서` `이미지` `영상` `JSON` 등 `byte로 표현할 수 있는 모든 데이터` 전송 가능!
