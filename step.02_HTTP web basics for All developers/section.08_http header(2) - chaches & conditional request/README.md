@@ -86,4 +86,39 @@
 	- `캐시 제어 로직을 서버에서 완전히 관리함`
 - 클라이언트는 단순히 `ETag` 값을 서버에 제공함
 	- 클라이언트는 캐시 메커니즘을 몰라도 됨
-- ex) 서버 베타 오픈 기간동안 파일이 변경되어도 `ETag`를 동일하게 유지하는 등
+- ex) 서버 베타 오픈 기간동안 파일이 변경되어도 `ETag`를 동일하게 유지하는 등  
+<br/><br/><br/>
+
+## 04. 캐시와 조건부 요청 헤더
+### 캐시 제어 헤더
+- `Cache-Control` : 캐시 제어
+- `Pragma` : 캐시 제어 (하위 호환)
+- `Expires` : 캐시 유효 기간 (하위 호환)  
+<br/>
+
+### Cache-Control - 캐시 지시어 (directives)
+- `Cache-Control: max-age` : 캐시 유효 시간, 초 단위
+- `Cache-Control: no-cache` : 데이터는 캐시로 사용해도 되나 항상 원(ORIGIN) 서버에 검증하고 사용
+- `Cache-Control: no-store` : 데이터에 민감한 정보가 있어 저장하면 안됨
+	- 메모리에서 사용하고 최대한 빠르게 삭제  
+<br/>
+
+### Pragma - 캐시 제어 (하위 호환)
+- `Pragma: no-cache` : no-cache 처럼 동작함
+- HTTP 1.0 하위 호환  
+<br/>
+
+### Expires - 캐시 만료일 지정 (하위 호환)
+- 캐시 만료일을 정확한 `날짜`로 지정
+- HTTP 1.0 부터 사용
+- 현재는 더 유연한 `Cache-Control: max-age` 권장
+	- 같이 사용하면 `Expires`가 무시 됨  
+<br/>
+
+### 검증 헤터와 조건 부 요청 헤더 정리
+- 검증 헤더 (Validator)
+	- ETag
+	- Last-Modified
+- 조건부 요청 헤더
+	- ` If-Match, If-None-Match:` ETag 값 사용
+	- `If-Modified-Since, If-Unmodified-Since:` Last-Modified 값 사용
