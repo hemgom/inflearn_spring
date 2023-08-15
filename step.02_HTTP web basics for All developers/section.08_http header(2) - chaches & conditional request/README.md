@@ -136,4 +136,28 @@
 	- `Cache-Control: public` : 응답이 public 캐시에 저장되어도 됨
 	- `Cache-Control: private` : 응답이 해당 사용자만을 위한 것, private 캐시에 저장해야 함(기본값)
 	- `Cache-Control: s-maxage` : 프록시 캐시(서버)에만 적용되는 max-age
-	- `Age: 60 (HTTP 헤더)` : 오리진 서버에서 응답 후 프록시 캐시 내에 머문 시간(초)
+	- `Age: 60 (HTTP 헤더)` : 오리진 서버에서 응답 후 프록시 캐시 내에 머문 시간(초)  
+<br/><br/><br/>
+
+## 06. 캐시 무효화
+### Cache-Control - 확실한 캐시 무효화 응답
+- `Cache-Control: no-cache, no-store, must-revalidate`
+	- __Cache-Control: no-cache__ : 데이터는 캐시해도 되지만, 항상 원 서버에 검증하고 사용 (이름에 주의!)
+	- __Cache-Control: no-store__ : 데이터에 민감한 정보가 있으므로 저장하면 안됨
+ (메모리에서 사용하고 최대한 빨리 삭제)
+	 - __Cache-Control: must-revalidate__ : 캐시 만료후 최초 조회시 원 서버에 검증해야함
+		 - 원 서버 접근 실패 시 반드시 오류 발생해야 함 (504 Gateway Timeout)
+		 - 캐시 유효 시간이라면 캐시를 사용
+- `Pragma: no-cache`
+	- HTTP 1.0 하위 호환
+- 위 두개를 확실하게 넣어야 확실하게 대응이 됨  
+<br/>
+
+### no-cache VS must-revalidate
+예를 들어 프록시 서버와 원 서버 사이에 문제가 생겨 원 서버 접근이 힘들다면 어떻게 될까?
+- `no-cache`의 경우
+	- 프록시 서버의 설정에 따라 이전 데이터를 전송 받을 수 있음
+- `must-revalidate`의 경우
+	- 원 서버 접근이 불가능하면 항상 `504 Gateway Timeout` 오류가 발생
+	- 클라이언트에게 어떤 경우에도 현재 원 서버 접근이 불가능함을 알림
+- 이러한 차이점 때문에 둘 다 넣어 줘야 확실한 `캐시 무효화`가 가능함
