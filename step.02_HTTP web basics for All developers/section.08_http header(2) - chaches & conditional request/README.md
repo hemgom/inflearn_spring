@@ -121,4 +121,19 @@
 	- Last-Modified
 - 조건부 요청 헤더
 	- ` If-Match, If-None-Match:` ETag 값 사용
-	- `If-Modified-Since, If-Unmodified-Since:` Last-Modified 값 사용
+	- `If-Modified-Since, If-Unmodified-Since:` Last-Modified 값 사용  
+<br/><br/><br/>
+
+## 05. 프록시 캐시
+### 원(origin) 서버 직접 접근
+- `origin server` : 클라이언트에게 제공하는 원 데이터를 가진 서버
+- `proxy cache server` : 클라이언트가 자주 사용하는 데이터를 캐시로 가지고 있는 서버
+	- 캐시는 원 서버에게 제공 받음, 미리 캐시로 가지고 있어 속도 향상에 도움이 됨  
+<br/>
+
+### Cache-Control - 캐시 지시어 (directives)
+- 기타 헤더
+	- `Cache-Control: public` : 응답이 public 캐시에 저장되어도 됨
+	- `Cache-Control: private` : 응답이 해당 사용자만을 위한 것, private 캐시에 저장해야 함(기본값)
+	- `Cache-Control: s-maxage` : 프록시 캐시(서버)에만 적용되는 max-age
+	- `Age: 60 (HTTP 헤더)` : 오리진 서버에서 응답 후 프록시 캐시 내에 머문 시간(초)
