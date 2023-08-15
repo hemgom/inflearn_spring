@@ -80,4 +80,65 @@
 
 ### Content - Length (표현 데이터의 길이)
 - 바이트 단위
-- `Transfer - Encoding(전송 코딩)`을 사용하면  `Content - Length`를 사용하면 안됨
+- `Transfer - Encoding(전송 코딩)`을 사용하면  `Content - Length`를 사용하면 안됨  
+<br/><br/><br/>
+
+## 03. 콘텐츠 협상
+### 협상 (콘텐츠 네고시에이션)
+클라이언트가 선호하는 표현 요청
+- 협상 헤더
+	- `Accept` : 클라이언트가 선호하는 미디어 타입 전달
+	- `Accept-Charset` : 클라이언트가 선호하는 문자 인코딩
+	- `Accept-Encoding` : 클라이언트가 선호하는 압축 인코딩
+	- `Accept-Language` : 클라이언트가 선호하는 자연 언어
+- 협상 헤더는 요청시에만 사용가능  
+<br/>
+
+###  예시
+#### Accept-Language 적용 전과 후
+- 클라이언트 : 한국 브라우저
+- 서버 (다중 언어 지원 서버)
+	1. 기본 영어(en) 
+	2. 한국어 지원(ko)
+- Accept-Language 적용 전
+	1. 클라이언트가 서버에 접속 요청
+		- 하지만 요청에는 클라이언트가 선호하는 언어에 대한 데이터가 없음
+	2. 서버는 기본 언어로 요청에 응답함
+		- 영어로 된 사이트가 출력됨
+- Accept-Language 적용 후
+	1. 클라이언트가 서버에 접속 요청
+		- 선호하는 언어가 한국어라는 데이터가 요청에 들어있음
+	2. 서버는 한국어도 지원하기에 한국어로 요청에 응답함
+		- 한국어로 된 사이트가 출력됨  
+<br/>
+
+### 협상과 우선순위 (1)
+- `Quality Values(q)` 값 사용
+- `0 ~1` 범위를 값으로 가지며, 값이 클수록 높은 우선순위를 가짐
+	- `1` 값은 생략이 가능하기에 만약 `q`가 생략되어 있다면 그 값은 `1`이다.  
+- ex) Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
+	- `ko-KR(=ko-KR;q=1)` : 1순위
+	- `ko;q=0.9` : 2순위
+	- `en-US;q=0.8` : 3순위
+	- `en;q=0.7` : 4순위
+- 서버는 클라이언트가 선호하는 언어의 순위를 확인하고 지원하는 언어 중 높은 순위에 해당 하는 언어로 응답을 제공한다.  
+<br/>
+
+### 협상과 우선순위 (2)
+- 구체적인 것을 우선시 함
+- ex) Accept: text/\*, text/plain, text/plain;format=flowed, \*/\*
+	-  `text/plain, text/plain;format=flowed` : 1순위
+	- `text/plain` : 2순위
+	-  `text/*` : 3순위
+	- `*/*` : 4순위  
+<br/>
+
+### 협상과 우선순위 (3)
+- 구체적인 것을 기준으로 미디어 타입을 맞춤
+- ex) Accept: text/*;q=0.3, text/html;q=0.7, text/html;level=1, text/html;level=2;q=0.4, \*/\*;q=0.5
+	- `text/html;level=1` : q = 1
+	- `text/html` : q = 0.7
+	- `text/plain` : q = 0.3
+	- `image/jpeg` : q = 0.5
+	- `text/html;level=2` : q = 0.4
+	- `text/html;level=3` : q = 0.7
