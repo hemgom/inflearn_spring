@@ -48,4 +48,36 @@
 	- 데이터 유형(html, json), 데이터 길이, 압축 정보 등  
 <br/>
  
-- `참고!` : 표현 헤더는 표현 메타데이터와, 페이로드 메시지를 구분해야 하나 해당 강의에선 생략
+- `참고!` : 표현 헤더는 표현 메타데이터와, 페이로드 메시지를 구분해야 하나 해당 강의에선 생략  
+<br/><br/><br/>
+
+## 02. 표현 (Representation)
+- 표현 헤더
+	- `Content-Type` : 표현 데이터의 형식
+	- `Content-Encoding` : 표현 데이터의 압축 방식
+	- `Content-Language` : 표현 데이터의 자연 언어
+	- `Content-Length` : 표현 데이터의 길이
+-  표현 헤더는 전송과 응답 둘다 사용함  
+<br/>
+
+### Content - Type (표현 데이터의 형식)
+"메시지 바디의 데이터가 뭐야?"에 대한 힌트 또는 답을 알려줌
+- 미디어 타입, 문자 인코딩
+	- ex) `text/html; charset=utf-8` `appication/json` `image/png`  
+<br/>
+
+### Content - Encoding (표현 데이터 인코딩)
+- 표현 데이터 압축을 위해 사용
+- 데이터를 전달하는 쪽에서 압축 후 인코딩 헤더를 추가함
+- 데이터를 받는 쪽에서 인코딩 헤더의 정보로 압축을 해제함
+	- ex) `gzip` `deflate` `identity`  
+<br/>
+
+### Content - Language (표현 데이터의 자연언어)
+- 표현 데이터의 자연 언어를 표현
+	- ex) `ko` `en` `en-US`  
+<br/>
+
+### Content - Length (표현 데이터의 길이)
+- 바이트 단위
+- `Transfer - Encoding(전송 코딩)`을 사용하면  `Content - Length`를 사용하면 안됨
