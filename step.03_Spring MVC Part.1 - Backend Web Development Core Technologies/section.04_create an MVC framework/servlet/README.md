@@ -30,6 +30,13 @@
 ![img_004.jpg](img/img_004.jpg)  
 <br/><br/><br/>
 
-## 04. Model 추가 - v3
+## 04. Model 추가 - v3 ★★★
 ### v3 구조
-![img_005.jpg](img/img_005.jpg)
+![img_005.jpg](img/img_005.jpg)  
+<br/><br/><br/>
+
+## 05. 단순하고 실용적인 컨트롤러 - v4
+### v4 구조
+![img_006.jpg](img/img_006.jpg)
+- 구조가 `v3`와 동일하다.
+- 단, `Controller`가 `ModelView`가 아닌 `ViewName`만을 반환한다.
