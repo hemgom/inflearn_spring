@@ -17,4 +17,14 @@
 
 ### 스프링 웹 MVC와 프론트 컨트롤러
 - 스프링 웹 MVC의 핵심이 `FrontController`이다.
-- 스프링 웹 MVC의 `DispatcherServlet`이 프론트 컨트롤러 패턴으로 구현되어 있다.
+- 스프링 웹 MVC의 `DispatcherServlet`이 프론트 컨트롤러 패턴으로 구현되어 있다.  
+<br/><br/><br/>
+
+## 02. 프론트 컨트롤러 도입 - v1
+### v1 구조
+![img_003.jpg](img/img_003.jpg)  
+<br/><br/><br/>
+
+## 03. View 분리 - v2
+### v2 구조
+![img_004.jpg](img/img_004.jpg)
