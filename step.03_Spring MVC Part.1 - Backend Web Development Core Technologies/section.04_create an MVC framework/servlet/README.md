@@ -27,4 +27,9 @@
 
 ## 03. View 분리 - v2
 ### v2 구조
-![img_004.jpg](img/img_004.jpg)
+![img_004.jpg](img/img_004.jpg)  
+<br/><br/><br/>
+
+## 04. Model 추가 - v3
+### v3 구조
+![img_005.jpg](img/img_005.jpg)
