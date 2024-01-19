@@ -61,4 +61,57 @@ org.springframework.http.converter.HttpMessageConverter
     - ex) return의 대상 클래스 (`byte[]`, `String`, `HelloData`)
   - HTTP 요청의 Accept 미디어 타입 지원 여부 확인.(정확히는 `@RequestMapping의 produces`)
     - ex) `text/plain`, `application/json`, `*/*`
-- `canWrite()` 조건을 만족하면 `write()`를 호출해 HTTP 응답 메시지 바디에 데이터를 생성
+- `canWrite()` 조건을 만족하면 `write()`를 호출해 HTTP 응답 메시지 바디에 데이터를 생성  
+<br/><br/><br/>
+
+## 14. 요청 매핑 핸들러 어댑터 구조
+### Spring MVC 구조
+![img_002](img/img_002.jpg)
+- 핵심은 애노테이션 기반의 컨트롤러(= `@RequestMapping`)를 처리하는 핸들러 어댑터인 요청 매핑 핸들러 어댑터(=`RequestMappingHnadlerAdapter`)에 있음  
+<br/>
+
+### RequestMappingHandlerAdapter 동작 방식
+![img_003](img/img_003.jpg)
+<br/>
+- `ArgumentResolver`
+  - 애노테이션 기반의 컨트롤러는 매우 다양한 파라미터를 사용 가능함 (= 유연함↑)
+    - `HttpServletRequest`, `Model`
+    - 애노테이션: `@RequestParam`, `@ModelAttribute`
+    - HTTP 메시지 처리: `@RequestBody`, `HttpEntity`
+  - 애노테이션 기반 컨트롤러를 처리하는 `RequestMappingHandlerAdapter`는 `ArgumentResolver`를 호출
+    - `컨트롤러(핸들러)`가 필요로 하는 다양한 `파라미터의 값(객체)` 생성
+  - 스프링의 경우 30개 이상의 `ArgumentResolver`를 기본적으로 제공함
+- `동작 방식`
+  - `ArgumentResolver`의 `supportsParameter()` 호출, 해당 파라미터를 지원하는지 체크
+  - 지원한다면 `resolveArgument()` 호출, 실제 객체를 생성
+  - 생성된 객체는 컨트롤러 호출시 넘어감
+- `ReturnValueHandler` (= `HandlerMethodReturnValueHandler`의 줄임말)
+  - `ArgumentResolver`와 비슷, `응답 값을 변환하고 처리`함
+  - 컨트롤러에서 `String`으로 `뷰 이름`으로 반환해도 동작하는 이유
+  - 스프링의 경우 10여개의 `ReturnValueHandler`를 지원함
+    - ex) `ModelAndView`, `@ResponseBody`, `HttpEntity`, `String`  
+<br/>
+
+### HTTP 메시지 컨버터
+#### HTTP 메시지 컨버터 위치
+![img_004](img/img_004.jpg)
+- HTTP 메시지 컨버터를 사용하는 `@RequestBody`도 컨트롤러가 필요로 하는 파라미터의 값에 사용됨
+- `@ResponseBody`의 경우도 컨트롤러의 반환 값을 이용함
+- `요청의 경우`
+  - `@RequestBody`를 처리하는 `ArgumentResolver`가 있고, `HttpEntity`를 처리하는 `ArgumentResolver`가 있음 
+  - `ArgumentResolver`들이 HTTP 메시지 컨버터를 사용해서 `필요한 객체를 생성`
+- `응답의 경우` 
+  - @ResponseBody 와 HttpEntity 를 처리하는 ReturnValueHandler 가 있다. 그리고
+  - 여기에서 HTTP 메시지 컨버터를 호출해서 응답 결과를 만든다.
+- 스프링 MVC
+  - `@RequestBody, @ResponseBody`가 있으면 `RequestResponseBodyMethodProcessor(ArgumentResolver)`를 사용
+  - `HttpEntity`가 있으면 `HttpEntityMethodProcessor(ArgumentResolver)`를 사용  
+<br/>
+
+### 확장
+- 스프링은 다음을 모두 인터페이스로 제공한다. 필요하면 언제든지 기능을 확장할 수 있다.
+  - `HandlerMethodArgumentResolver`
+  - `HandlerMethodReturnValueHandler`
+  - `HttpMessageConverter`
+- 사실 스프링이 대부분의 기능을 제공하기에 실제 기능을 확장할 일이 많지는 않음
+  - 기능 확장은 `WebMvcConfigurer`를 상속 받아서 스프링 빈으로 등록하면 됨
