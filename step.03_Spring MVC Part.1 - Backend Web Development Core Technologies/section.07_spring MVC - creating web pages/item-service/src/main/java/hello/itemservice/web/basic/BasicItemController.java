@@ -84,12 +84,21 @@ public class BasicItemController {
     }
 
     // 줄임의 최종형
-    @PostMapping("/add")
+    //@PostMapping("/add")
     public String addItemV4(Item item) {
 
         itemRepository.save(item);
 
         return "basic/item";
+    }
+
+    // Post/Redirect/Get = PRG
+    @PostMapping("/add")
+    public String addItemV5(Item item) {
+
+        itemRepository.save(item);
+
+        return "redirect:/basic/items/" + item.getId();
     }
 
     @GetMapping("/{itemId}/edit")
