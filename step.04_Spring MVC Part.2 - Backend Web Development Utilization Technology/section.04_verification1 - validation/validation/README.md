@@ -22,7 +22,7 @@
   - 서버만으로 검증 시 즉각적인 고객 사용성이 부족해짐
   - 둘을 적절히 섞어 사용하고 최종적으로 서버 검증은 필수
   - API 방식을 사용하면 API 잘 정의해서 검증 오류를 API 응답 결과에 잘 남겨야함  
-<br/>
+<br/><br/><br/>
 
 ## 03. 검증 직접 처리 - 소개
 ### 상품 저장 검증 성공 시
@@ -33,4 +33,37 @@
 ### 상품 저장 검증 실패 시
 ![img_002.jpg](img/img_002.jpg)
 사용자가 정상범위가 아닌 데이터를 입력 할 경우 서버 검증 로직이 실패해야 함<br/>
-이 경우 다시 한번 사용자에게 상품 등록 화면을 보여주고 오류 발생의 원인이 무엇인지 알려줄 필요가 있음
+이 경우 다시 한번 사용자에게 상품 등록 화면을 보여주고 오류 발생의 원인이 무엇인지 알려줄 필요가 있음  
+<br/><br/><br/>
+
+## 07. BindingResult2
+### BindingResult
+- 스프링이 제공하는 검증 오류를 보관하는 객체, 검증 오류가 발생하면 해당 객체에 보관하면 됨
+- `BindingResult`가 있다면 `@ModelAttribute`에 데이터 바인딩 시 오류가 발생해도 컨트롤러가 호출 됨
+  - 예시로 `@ModelAtrribute`에 바인딩 시 오류가 발생한다면?
+    - `BindingResult`없음: 400 오류 발생, 컨트롤러가 호출되지 않고 오류 페이지로 이동
+    - `BindingRESULT`있음: 오류 정보(FieldError)를 BindingResult에 담아 컨트롤러를 정상 호출  
+<br/>
+
+### BindingResult에 검증 오류 적용방법 3가지
+- `@ModelAttribute`의 객체에 타입 오류 등으로 바인딩이 실패하는 경우 스프링이 `FieldError`생성해 `BindginResult`에 넣어줌
+- 개발자가 직접 넣어줌
+- `Validator`사용  
+<br/>
+
+### 타입 오류 확인
+숫자가 입력되어야 할 곳에 문자를 입력해 타입을 다르게해 `BindingResult`를 호출 `bindingResult`의 값을 확인  
+<br/>
+
+### 주의
+- `BindingResult`는 검증할 대상 바로 다음에 와야함 (순서 중요)
+- `BindingResult`는 Model에 자동으로 포함됨  
+<br/>
+
+### BindingResult와 Errors
+- `BindingResult`는 인터페이스며 `Errors` 인터페이스를 상속받고 있음
+  - 구현체는 `BeanPropertyBindingResult`이며 두 인터페이스 모두 구현하고 있음
+- 사실 `Errors`를 `BindingResult` 대신에 사용해도 됨
+  - `Errors`: 단순한 오류 저장과 조회 기능 제공
+  - `BindingResult`: Errors가 제공하는 기능 + 추가적인 기능 제공
+  - 기능들 더 많이 제공하는 `BindingResult`를 많이 사용함
