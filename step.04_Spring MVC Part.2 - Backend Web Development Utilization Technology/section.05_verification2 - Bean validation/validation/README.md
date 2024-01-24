@@ -35,4 +35,37 @@ public class Item {
 
 ### 하이버네이트 Validator 관련 링크
 - 공식 사이트: http://hibernate.org/validator/
-- 공식 메뉴얼: https://docs.jboss.org/hibernate/validator/6.2/reference/en-US/html_single/
+- 공식 메뉴얼: https://docs.jboss.org/hibernate/validator/6.2/reference/en-US/html_single/  
+<br/><br/><br/>
+
+## 11. Form 전송 객체 분리 - 소개
+사실상 실무에서는 `groups`기능을 잘 사용하지 않는다고 한다.
+- 이유: 등록시 폼에서 전달하는 데이터가 Item 도메인 객체와 딱 맞지 않기 때문임  
+- 실무에서는 `회원 관련 데이터(현재 예제)`뿐만 아니라 `약관 정보 등`의 수많은 부가 데이터가 오고가기 때문이다.
+<br/>
+
+그렇기에 실무에서는 `Item`을 직접 주고 받지 않고 복잡한 폼의 데이터를 컨트롤러까지 전달할 별도의 객체를 만들어 전달한다고 한다.
+- ex) `ItemSaveForm`을 전달 받는 `전용 객체를 생성`해 `@ModelAttribute`로 사용하는 식
+  - 생성한 전용 객체를 통해 컨트롤러에서 폼 데이터를 받은 후 컨트롤러에서 필요 데이터를 사용해 `Item`을 생성한다.  
+<br/>
+
+#### 폼 데이터 전달에 Item 도메인 객체 사용
+- `HTML Form -> Item -> Controller -> Item -> Repository`
+  - 장점: Item 도메인 객체를 `컨트롤러, 리포지토리`까지 `직접 전달`, 중간에서 Item을 만드는 과정이 따로 없어 간단함
+  - 단점: 정말 간단한 경우에만 적용이 가능함, 수정시 검증 중복 문제와 groups를 사용해야 함  
+<br/>
+
+#### 폼 데이터 전달을 위한 별도의 객체 사용
+- `HTML Form -> ItemSaveForm -> Controller -> Item 생성 -> Repository`
+  - 장점: 전송 폼 데이터가 복잡해도 맞춤 폼 객체를 사용해 데이터를 전달 받을 수 있음, 보통 등록/수정용으로 별도의 폼 객체를 만들기에 검증 중복이 없음
+  - 단점: 폼 데이터 기반으로 컨트롤러에서 Item 객체를 생성하는 변환 과정이 추가됨  
+<br/>
+
+수정의 경우 등록과 완전히 다른 데이터가 넘어오게 됨
+- 예로 등록 같은 경우 `로그인ID, 주민번호 등등`을 받겠지만 수정시에는 이런 부분이 빠지게 된다.
+- 때문에 검증 로직도 많이 달라짐
+  - 즉, `ItemUpdateForm`이라는 별도의 객체로 데이터를 전달받는 것이 좋다!  
+<br/>
+
+### 따라서
+실무에서는 사실상 `groups` 기능을 적용할 일이 매우 드물다
