@@ -2,12 +2,16 @@ package hello.itemservice.domain.item;
 
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
+import org.hibernate.validator.constraints.ScriptAssert;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
+// 아래의 방식을 제약이 많고 복잡함, 실무에서는 검증 기능이 객체의 범위를 넘어서는 경우가 종종 있는데, 이를 대응하기 어려움
+// 사실상 오브젝트 오류 관련 부분은 직접 자바 코드로 작성하는 것을 권장하는 편
+//@ScriptAssert(lang = "javascript", script = "_this.price * _this.quantity >= 10000", message = "총합이 10,000원이 넘도록 입력해주세요.")
 public class Item {
 
     private Long id;
