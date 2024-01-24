@@ -14,18 +14,18 @@ import javax.validation.constraints.NotNull;
 //@ScriptAssert(lang = "javascript", script = "_this.price * _this.quantity >= 10000", message = "총합이 10,000원이 넘도록 입력해주세요.")
 public class Item {
 
-    @NotNull(groups = UpdateCheck.class) // 수정 시에만 해당 부분 체크
+    //@NotNull(groups = UpdateCheck.class) // 수정 시에만 해당 부분 체크
     private Long id;
 
-    @NotBlank(groups = {SaveCheck.class, UpdateCheck.class})   // 빈값 + 공백만 있는 경우를 허용하지 않음
+    //@NotBlank(groups = {SaveCheck.class, UpdateCheck.class})   // 빈값 + 공백만 있는 경우를 허용하지 않음
     private String itemName;
 
-    @NotNull(groups = {SaveCheck.class, UpdateCheck.class})    // null 값을 허용하지 않음
-    @Range(min = 1000, max = 1000000, groups = {SaveCheck.class, UpdateCheck.class})   // 지정한 최소, 최대 값 범위 안의 값만 허용
+    //@NotNull(groups = {SaveCheck.class, UpdateCheck.class})    // null 값을 허용하지 않음
+    //@Range(min = 1000, max = 1000000, groups = {SaveCheck.class, UpdateCheck.class})   // 지정한 최소, 최대 값 범위 안의 값만 허용
     private Integer price;
 
-    @NotNull
-    @Max(value = 9999, groups = {SaveCheck.class})  // 지정한 최대 값까지만 허용, 저장할 때만 해당 부분 체크
+    //@NotNull
+    //@Max(value = 9999, groups = {SaveCheck.class})  // 지정한 최대 값까지만 허용, 저장할 때만 해당 부분 체크
     private Integer quantity;
 
     public Item() {
