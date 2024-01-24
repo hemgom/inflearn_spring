@@ -14,6 +14,7 @@ import javax.validation.constraints.NotNull;
 //@ScriptAssert(lang = "javascript", script = "_this.price * _this.quantity >= 10000", message = "총합이 10,000원이 넘도록 입력해주세요.")
 public class Item {
 
+    @NotNull // 수정 요구사항 추가 -> 하지만 이렇게 되면 상품 등록할 때 id가 없어 오류로 등록 화면에 갇히게 됨
     private Long id;
 
     @NotBlank(message = "공백X")   // 빈값 + 공백만 있는 경우를 허용하지 않음
@@ -24,7 +25,8 @@ public class Item {
     private Integer price;
 
     @NotNull
-    @Max(9999)  // 지정한 최대 값까지만 허용
+    //수정 요구사항 추가
+    //@Max(9999)  // 지정한 최대 값까지만 허용
     private Integer quantity;
 
     public Item() {
