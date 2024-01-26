@@ -10,9 +10,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-public class ApiExceptionV2Controller {
+public class ApiExceptionV3Controller {
 
-    @GetMapping("/api2/members/{id}")
+    // 다른 하위 패키지 컨트롤러도 대상이 되는지 확인
+    @GetMapping("/api3/members/{id}")
     public MemberDto getMember(@PathVariable("id") String id) {
 
         if (id.equals("ex")) {
