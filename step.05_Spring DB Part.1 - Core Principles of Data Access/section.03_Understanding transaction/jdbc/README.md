@@ -172,4 +172,87 @@ insert into member(member_id, money) values ('newId2',10000);
 ### 3-2. 롤백 - rollback
 - 세션1에서 `rollback;` 호출 -> 트랜잭션 시작 전 상태로 되돌림, 데이터베이스에 신규 데이터 반영 X
 - 현 상태에서 세션1, 세션2에서 `select * from member;`를 실행
-  - `세선1`, `세션2`: 기본 데이터 조회 가능
+  - `세선1`, `세션2`: 기본 데이터 조회 가능  
+<br/><br/><br/>
+
+## 06. 트랜잭션 - DB 예제4- 계좌이체
+### 1. 계좌이체 기본 데이터
+#### 기본데이터 입력
+```
+set autocommit true;
+
+delete from member;
+insert into member(member_id, money) values ('memberA',10000);
+insert into member(member_id, money) values ('memberB',10000);
+```
+![img_007](img/img_007.jpg)  
+<br/>
+
+### 2-1. 계좌이제 흐름 - 정상
+#### 계좌이체 실행
+```
+set autocommit false; // 수동 커밋 모드 = 트랜잭션 시작
+
+update member set money=10000 - 2000 where member_id = 'memberA';
+update member set money=10000 + 2000 where member_id = 'memberB';
+```
+![img_008](img/img_008.jpg)
+- 세션1에서 `memberA`가 `memberB`에게 `2,000원`을 계좌이체하는 트랜잭션 실행
+- 모든 쿼리가 성공해 `memberA`의 금액은 `2,000원 차감`, `memberB`의 금액은 `2,000원 증가`함 
+- 단 아직 `commit`을 하지 않아서 변경 데이터는 `임시 상태`
+  - 세션2에서 변경된 데이터를 조회 할 수 없음  
+<br/>
+
+#### commit 호출
+```
+commit;
+```
+![img_009](img/img_009.jpg)
+- 세션1에서 `commit`을 호출 -> 데이터베이스에 변경 데이터가 반영됨
+  - 세션2에서도 해당 변경 데이터를 조회 가능  
+<br/>
+
+### 2-2. 계좌이체 흐름 - 비정상(문제 발생)
+#### 계좌이체 실행
+```
+set autocommit false; // 수동 커밋 모드 = 트랜잭션 시작
+
+update member set money=10000 - 2000 where member_id = 'memberA';   // 성공
+update member set money=10000 + 2000 where member_iddd = 'memberB'; // 쿼리 예외 발생
+```
+![img_010](img/img_010.jpg)
+- 계좌이체 트랜잭션 실행 도중 `SQL`에서 문제 발생 -> 오타로 인해 `memberB`의 금액은 `2,000원 증가`시키는 것에 실패
+- 중요한 문제점은 `memberA`의 금액만 줄어들었다는 점이다.  
+<br/>
+
+#### 2-2-1. 강제 커밋
+```
+commit;
+```
+![img_011](img/img_011.jpg)
+- 결국 일이 커져버림, `memberA`의 금액만 줄어든 잘못된 변경 데이터가 데이터베이스에 반영됨
+- 즉, 중간에 문제가 발생했다면 `commit`을 호출해선 절대 안됨  
+<br/>
+
+#### 2-2-2. 롤백
+```
+rollback;
+```
+![img_012](img/img_012.jpg)
+- `rollback`을 호출해서 트랜잭션 시작 직전의 상태로 데이터를 복구함
+  - 문제 발생 이전으로 되돌린 것과 같음
+- 트랜잭션 시작 이전으로 복구했기에 `세션1, 세션2` 모두 제대로 된 데이터를 조회 가능함  
+<br/>
+
+### 정리
+1. `원자성`
+   - 트랜잭션 내 실행 작업들은 모두 성공하거나 모두 실패 해야함
+   - 여러 `SQL 명령어`를 하나의 작업처럼 처리 가능함
+   - 성공하면 한 번에 `반영`하고 실패하면 한 번에 `복구`가 가능함
+2. `오토 커밋`
+   - `SQL` 실행 작업 도중 일부 성공 일부 실패 할 경우 성공된 작업만이 데이터베이스에 반영됨
+     - 즉, 쿼리 실행마다 바로 커밋이 되어버리므로 원치 않은 변경 데이터 결과가 데이터베이스에 반영 되어버림
+3. `트랜잭션 시작`
+   - 즉, 여러 작업을 한 작업처럼 처리하는 종류의 작업은 반드시 `commit`을 `수동 모드`로 설정해야 함
+     - 그래야 `rollback`을 호출해 `트랜잭션 시작 전(=문제 발생 전)` 상태로 복구할 수 있기 때문임
+     - 이러한 이유로 `커밋을 수동 모드로 전환(설정)`하는 것은 `트랜잭션을 시작`한다고 표현함
