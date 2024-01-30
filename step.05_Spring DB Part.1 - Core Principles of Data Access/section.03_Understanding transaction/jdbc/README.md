@@ -376,4 +376,41 @@ commit;
 ### 세션2 락 타임아웃
 - `SET LOCK_TIMEOUT <milliseconds>`: 락 타임아웃 시간(대기시간)을 설정
   - 대기시간 안에 락을 획득하지 못할 경우 예외 발생
-- 테스트 도중에 락이 꼬이는 문제가 발생할 수 있는데 이 때는 `h2.bat`을 종료하고 다시 실행하도록 한다.
+- 테스트 도중에 락이 꼬이는 문제가 발생할 수 있는데 이 때는 `h2.bat`을 종료하고 다시 실행하도록 한다.  
+<br/><br/><br/>
+
+## 09. DB 락 - 조회
+- 데이터베이스마다 다르지만, 일반적으로 조회는 락을 사용하지 않음
+  - 하지만 트랜잭션 종료 시점까지 데이터를 다른 세션에서 변경하지 못하도록 막아야 할 경우가 종종 있음
+- 만약 조회시 락을 획득하고 싶다면 `select for update` 구문을 사용하면 됨
+  - 조회 시점에 락을 가져가버려 다른 세션에서 데이터를 변경할 수 없음  
+<br/>
+
+### 조회와 락
+#### 기본 데이터 입력
+```
+set autocommit true;
+
+delete from member;
+insert into member(member_id, money) values ('memberA',10000);
+```
+<br/>
+
+#### 세션1
+```
+set autocommit false;
+
+// select ~ for update 구문으로 락을 세션1이 가져감
+select * from member where member_id='memberA' for update;
+```
+<br/>
+
+#### 세션2
+```
+set autocommit false;
+
+update member set money=500 where member_id = 'memberA';
+```
+- 세션2가 `memberA`를 변경하려고 하지만 락이 없어서 해당 쿼리는 대기 상태가 됨
+- 세션1이 `commit`을 수행하고 락을 반환하면 세션2는 락을 획득해 쿼리를 수행할 수 있게 됨
+  - 만약 락 타임아웃 시간이 지난다면 락 타임아웃 예외가 발생하게 됨
