@@ -133,4 +133,43 @@ commit; // 수동으로 커밋
 - `수동 커밋 모드로 설정`하는 것을 `트랜잭션을 시작`한다고 표현함
 - 당연하지만 수동 커밋 모드일 경우 변경 이후에 꼭 `commit` 또는 `rollback`을 호출해야 함
 - 어떤 모드를 설정하든 해당 세션에서는 계속 유지가 됨
-  - 물론 중간에 다른 모드로 변경하는 것은 가능함
+  - 물론 중간에 다른 모드로 변경하는 것은 가능함  
+<br/><br/><br/>
+
+## 05. 트랜잭션 - DB 예제3 - 트랜잭션 실습
+### 1. 기본 데이터 입력
+#### 데이터 초기화 SQL
+```
+set autocommit true;
+
+delete from member;
+insert into member(member_id, money) values ('oldId', 10000);
+```
+- 현 상태에서 세션1, 세션2에서 `select * from member;`를 실행하면 두 세션 모두 기본 데이터를 조회 가능함  
+<br/>
+
+### 2. 신규 데이터 추가 - 커밋 전
+#### 세션1에서 신규 데이터 추가 SQL
+```
+set autocommit false; // 수동 커밋 설정 = 트랜잭션 시작
+
+insert into member(member_id, money) values ('newId1',10000);
+insert into member(member_id, money) values ('newId2',10000);
+```
+- 커밋이 수동 모드이기 때문에 현재 신규 데이터는 임시 저장 상태임
+- 현 상태에서 세션1, 세션2에서 `select * from member;`를 실행
+  - `세선1`: 기본 데이터 + 신규 데이터 조회 가능
+  - `세션2`: 기본 데이터 조회 가능, 신규 데이터 조회 불가능  
+<br/>
+
+### 3-1. 커밋 - commit
+#### 세션1에서 신규 데이터 commit
+- 세션1에서 `commit;` 호출 -> 데이터베이스에 신규 데이터가 반영이 됨
+- 현 상태에서 세션1, 세션2에서 `select * from member;`를 실행
+  - `세선1`, `세션2`: 기본 데이터 + 신규 데이터 조회 가능  
+<br/>
+
+### 3-2. 롤백 - rollback
+- 세션1에서 `rollback;` 호출 -> 트랜잭션 시작 전 상태로 되돌림, 데이터베이스에 신규 데이터 반영 X
+- 현 상태에서 세션1, 세션2에서 `select * from member;`를 실행
+  - `세선1`, `세션2`: 기본 데이터 조회 가능
