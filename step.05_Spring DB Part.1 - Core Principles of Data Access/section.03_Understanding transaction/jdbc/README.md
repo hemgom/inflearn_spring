@@ -92,4 +92,45 @@
 #### 세션1 신규 데이터 추가 후 rollback
 ![img_006](img/img_006.jpg)
 - 세션1이 신규 데이터 추가 후 `rollback` 호출 -> 신규 데이터 추가 이전으로 데이터가 복구됨
-  - `변경` 데이터는 종류(수정, 삭제 등)를 불문하고 트랜잭션 시작 직전의 상태로 복구됨
+  - `변경` 데이터는 종류(수정, 삭제 등)를 불문하고 트랜잭션 시작 직전의 상태로 복구됨  
+<br/><br/><br/>
+
+## 04. 트랜잭션 - DB 예제2 - 자동 커밋, 수동 커밋
+### 예제 사용 스키마
+```
+drop table member if exists;  // 기존에 member 테이블이 있다면 삭제
+
+// member 테이블 생성
+create table member (
+    member_id varchar(10),
+    money integer not null default 0,
+    primary key (member_id)
+)
+```  
+<br/>
+
+### 자동 커밋과 수동 커밋
+#### 자동 커밋 설정
+```
+set autocommit true;  // 자동 커밋으로 설정
+
+insert into member(member_id, money) values ('data1',10000);  //자동 커밋
+insert into member(member_id, money) values ('data2',10000);  //자동 커밋
+```
+- 보통 자동 커밋 모드가 기본으로 설정된 경우가 많음
+- 쿼리를 하나하나 실행할 때 마다 자동으로 커밋이 됨, 하지만 트랜잭션 기능을 제대로 사용할 수 없음  
+<br>
+
+#### 수동 커밋
+```
+set autocommit false; // 수동 커밋 모드 설정
+
+insert into member(member_id, money) values ('data3',10000);
+insert into member(member_id, money) values ('data4',10000);
+
+commit; // 수동으로 커밋
+```
+- `수동 커밋 모드로 설정`하는 것을 `트랜잭션을 시작`한다고 표현함
+- 당연하지만 수동 커밋 모드일 경우 변경 이후에 꼭 `commit` 또는 `rollback`을 호출해야 함
+- 어떤 모드를 설정하든 해당 세션에서는 계속 유지가 됨
+  - 물론 중간에 다른 모드로 변경하는 것은 가능함
