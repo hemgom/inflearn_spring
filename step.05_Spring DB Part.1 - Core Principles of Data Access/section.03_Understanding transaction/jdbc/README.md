@@ -300,4 +300,80 @@ rollback;
 
 #### DB 락 적용_06
 ![img_019](img/img_019.jpg)
-- 세션2가 `commit`을 수행항 -> 트랜잭션이 종료되어 락을 반환함
+- 세션2가 `commit`을 수행항 -> 트랜잭션이 종료되어 락을 반환함  
+<br/><br/><br/>
+
+## 08. DB 락 - 변경
+#### 기본 데이터 입력
+```
+set autocommit true;
+
+delete from member;
+insert into member(member_id, money) values ('memberA',10000);
+```
+<br/>
+
+### 변경과 락
+#### DB 락_01
+```
+// 세션1이 수행
+
+set autocommit false;
+
+update member set money=500 where member_id = 'memberA';
+```
+![img_014](img/img_014.jpg)
+- 섹션1이 트랜잭션을 시작 -> `memberA`의 `money`를 `500`으로 변경 시도
+  - 세션1이 `락`을 획득  
+<br/>
+
+#### DB 락_02
+```
+// 세션2가 수행
+
+SET LOCK_TIMEOUT 60000; // 락 대기시간 설정 = 60000ms
+
+set autocommit false;
+
+update member set money=1000 where member_id = 'memberA';
+```
+![img_015](img/img_015.jpg)
+- 섹션2가 데이터 수정을 위해 트랜잭션을 시작 -> 락이 없어 락이 돌아올 때 까지 대기함
+- `SET LOCK_TIMEOUT 60000`: 락 획득 시간을 60초로 설정함 -> 해당 시간안에 락을 획득하지 못할 경우 예외 발생
+  - 하지만 어째서인지 `H2 DB`에서는 설정시간에 딱 예외가 발생하지 않음, 시간이 더 걸리 수 있음을 유의!  
+<br/>
+
+#### DB 락_03
+```
+// 세션1이 수행
+
+commit;
+```
+![img_016](img/img_016.jpg)
+- 세션1이 `commit`을 수행 -> 트랜잭션이 종료되어 락을 반환함  
+<br/>
+
+#### DB 락_04
+![img_017](img/img_017.jpg)
+- 대기하던 세션2가 락을 획득함  
+<br/>
+
+#### DB 락_05
+![img_018](img/img_018.jpg)
+- 세션2가 `update sql`을 수행  
+<br/>
+
+#### DB 락_06
+```
+// 세션2가 수행
+
+commit;
+```
+![img_019](img/img_019.jpg)
+- 세션2가 `commit`을 수행항 -> 트랜잭션이 종료되어 락을 반환함  
+<br/>
+
+### 세션2 락 타임아웃
+- `SET LOCK_TIMEOUT <milliseconds>`: 락 타임아웃 시간(대기시간)을 설정
+  - 대기시간 안에 락을 획득하지 못할 경우 예외 발생
+- 테스트 도중에 락이 꼬이는 문제가 발생할 수 있는데 이 때는 `h2.bat`을 종료하고 다시 실행하도록 한다.
