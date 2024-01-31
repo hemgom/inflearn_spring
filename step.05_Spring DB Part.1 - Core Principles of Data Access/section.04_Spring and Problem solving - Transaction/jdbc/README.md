@@ -140,4 +140,120 @@ public class MemberServiceV2 {
 <br/>
 
 ### 스프링과 문제해결
-스프링의 경우 서비스 계층을 순수하게 유지하며 위에 설명된 문제들을 해결할 수 있는 다양한 방법/기술을 제공함
+스프링의 경우 서비스 계층을 순수하게 유지하며 위에 설명된 문제들을 해결할 수 있는 다양한 방법/기술을 제공함  
+<br/><br/><br/>
+
+## 02. 트랜잭션 추상화
+서비스 계층이 트랜잭션을 사용하기 위해서 JDBC 기술에 의존하고 있는 상황, 추후에 기술이 변경되면 트랜잭션 관련 코드도 모두 수정해야 한다.  
+<br/>
+
+### 구현 기술에 따른 트랜잭션 사용방법
+- 트랜잭션은 원자적 단위의 비즈니스 로직을 처리하기 위해 사용함
+- 구현 기술마다 트랜잭션 사용법이 다름
+  - `JDBC`: `con.setAutoCommit(false)`
+  - `JPA`: `transaction.begin()`  
+<br/>
+
+#### JDBC 트랜잭션 코드 예시
+```java
+public void accountTransfer(String fromId, String toId, int money) throws SQLException {
+    
+    Connection con = dataSource.getConnection();
+    
+    try {
+        con.setAutoCommit(false); //트랜잭션 시작
+        //비즈니스 로직
+        bizLogic(con, fromId, toId, money);
+        con.commit(); //성공시 커밋
+    } catch (Exception e) {
+        con.rollback(); //실패시 롤백
+        throw new IllegalStateException(e);
+    } finally {
+        release(con);
+    }
+    
+}
+```
+<br/>
+
+#### JPA 트랜잭션 코드 예시
+```java
+public static void main(String[] args) {
+    
+    //엔티티 매니저 팩토리 생성
+    EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpabook");
+    EntityManager em = emf.createEntityManager(); //엔티티 매니저 생성
+    EntityTransaction tx = em.getTransaction(); //트랜잭션 기능 획득
+        
+    try {
+        tx.begin(); //트랜잭션 시작
+        logic(em); //비즈니스 로직
+        tx.commit();//트랜잭션 커밋
+    } catch (Exception e) {
+        tx.rollback(); //트랜잭션 롤백
+    } finally {
+        em.close(); //엔티티 매니저 종료
+    }
+    emf.close(); //엔티티 매니저 팩토리 종료
+}
+```
+<br/>
+
+#### JDBC 트랜잭션 의존 관계
+![img_002](img/img_002.jpg)  
+<br/>
+
+#### 기술 변경 : JDBC -> JPA
+![img_003](img/img_003.jpg)  
+<br/>
+
+### 트랜잭션 추상화
+기술변경에 따른 서비스 계층 트랜잭션 코드를 수정하는 문제를 해결하려면 트랜잭션 기능을 `추상화`하면 된다.  
+<br/>
+
+#### 트랜잭션 추상화 인터페이스
+```java
+public interface TxManager {
+    begin();
+    commit();
+    rollback();
+}
+```
+- 트랜잭션 시작 -> 비즈니스 로직 수행 끝 -> 커밋 or 롤백
+- `TxManager` 인터페이스를 기반으로해 각 기술에 맞는 구현체를 만들면 됨
+  - `JdbcTxManager`: JDBC 트랜잭션 기능을 제공하는 구현체
+  - `JpaTxManager`: JPA 트랜잭션 기능을 제공하는 구현체  
+<br/>
+
+#### 트랜잭션 추상화 의존관계
+![img_004](img/img_004.jpg)
+- 서비스가 특정 트랜잭션 기술에 직접 의존하는게 아닌, `TxManager`란 추상화된 인터페이스에 의존함
+  - 원하는 구현체를 `DI`를 통해 주입만하면 됨
+  - JPA 기술을 사용하고 싶다면 `JpaTxManager`를 주입하면 그만이다.
+- 인터페이스를 의존하고 DI를 사용해 `OCP 원칙`을 지키게 됨
+  - 더 이상 트랜잭션을 사용하는 서비스 코드를 변경 없이 트랜잭션 기술이 변경 가능함  
+<br/>
+
+### 스프링의 트랜잭션 추상화
+![img_005](img/img_005.jpg)
+스프링은 이미 위에서 언급한 문제에 대한 해결책을 준비해 두었다. 우리는 그냥 스프링이 제공하는 트랜잭션 기술을 사용하면 된다.
+- `PlatformTransactionManager`: 스프링 트랜잭션 추상화의 핵심 인터페이스
+  - `org.springframework.transaction.PlatformTransactionManage`  
+<br/>
+
+#### PlatformTransactionManager 인터페이스
+```java
+package org.springframework.transaction;
+
+public interface PlatformTransactionManager extends TransactionManager {
+    TransactionStatus getTransaction(@Nullable TransactionDefinition definition)
+        throws TransactionException;
+
+    void commit(TransactionStatus status) throws TransactionException;
+    void rollback(TransactionStatus status) throws TransactionException;
+}
+```
+- `getTransaction()`: 트랜잭션 시작
+  - 이미 진행 중인 트랜잭션이 있는 경우 해당 트랜잭션에 참여할 수 있어 이름이 `getTransaction()`임
+- `commit()`: 트랜잭션 커밋
+- `rollback()`: 트랜잭션 롤백
