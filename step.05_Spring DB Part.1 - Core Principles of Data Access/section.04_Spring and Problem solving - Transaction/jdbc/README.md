@@ -400,4 +400,23 @@ public class Service {
 - 트랜잭션은 매우 즁요하고 전세계 누구나 사용하는 기능이므로 스프링은 AOP 처리를 위한 모든 기능을 제공해줌
 - 개발자는 트랜잭션 처리가 필요한 곳에 `@Transactional` 애노테이션만 붙여주면 됨
   - 이 애노테이션을 스프링 트랜잭션 AOP 가 인식해 트랜잭션 프록시를 적용해줌
-  - `@Transactional`: `org.springframework.transaction.annotation.Transactional`
+  - `@Transactional`: `org.springframework.transaction.annotation.Transactional`  
+<br/><br/><br/>
+
+## 09. 트랜잭션 문제 해결 - 트랜잭션 AOP 정리
+### 트랜잭션 AOP 적용 전체 흐름도
+![img_013](img/img_013.jpg)  
+<br/>
+
+#### 선언적 트랜잭션 관리 VS 프로그래밍 방식 트랜잭션 관리
+1. `선언적 트랜잭션 관리(declarative transaction Management)`
+   - `@Transactional` 애노테이션 하나만 선언해 트랜잭션을 적용하는 것
+   - 해당 로직에 트랜잭션을 적용하기 위해 선언만 하면 트랜잭션이 적용되는 방식
+2. `프로그래밍 방식의 트랜잭션 관리(programmatic transaction management)`
+   - `트랜잭션 매니저 또는 트랜잭션 템플릿` 등을 사용해 트랜잭션 관련 코드를 직접 작성하는 것
+- 선언적 트랜잭션 관리가 비교적 더 간편하고 실용적이므로 실무에서 대부분 사용됨  
+<br/>
+
+### 정리
+- 스프링이 제공하는 `선언적 트랜잭션 관리` 덕분에 드디어 서비스 계층에 순수한 비즈니스 로직만을 남길 수 있게 됨
+- 개발자는 `@Transactional` 애노테이션 하나만 추가하면 됨 -> 나머지는 `스프링 트랜잭션 AOP`가 알아서 자동으로 처리해줌
