@@ -326,4 +326,78 @@ public interface PlatformTransactionManager extends TransactionManager {
   - 이후 JDBC에서 JPA로 변경해도 서비스 코드를 그대로 유지할 수 있음
   - 기술 변경시에는 의존관계 주입만 변경해주면 됨
   - 현재 예제 코드에 `java.sql.SQLException`이 남아있으나 추후 해결할 예정
-- `트랜잭션 동기화 매니저` 덕에 더이상 커넥션을 파라미터로 넘기지 않아도 됨
+- `트랜잭션 동기화 매니저` 덕에 더이상 커넥션을 파라미터로 넘기지 않아도 됨  
+<br/><br/><br/>
+
+## 07. 트랜잭션 문제 해결 - 트랜잭션 AOP 이해
+### 프록시를 통한 문제 해결
+#### 프록시 도입 전 - 서비스의 로직에서 트랜잭션을 직접 시작함
+![img_011](img/img_011.jpg)
+```java
+*서비스 계층 트랜잭션 사용 코드 예시*
+
+//트랜잭션 시작
+TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+
+try {
+    //비즈니스 로직
+    bizLogic(fromId, toId, money);
+    transactionManager.commit(status); //성공시 커밋
+} catch (Exception e) {
+    transactionManager.rollback(status); //실패시 롤백
+    throw new IllegalStateException(e);
+}
+```
+<br/>
+
+#### 프록시 도입 후
+![img_012](img/img_012.jpg)
+```java
+*트랜잭션 프록시 코드 예시*
+
+public class TransactionProxy {
+    
+    private MemberService target;
+    
+    public void logic() {
+        
+        //트랜잭션 시작
+        TransactionStatus status = transactionManager.getTransaction(..);
+        try {
+            //실제 대상 호출
+            target.logic();
+            transactionManager.commit(status); //성공시 커밋
+        } catch (Exception e) {
+            transactionManager.rollback(status); //실패시 롤백
+            throw new IllegalStateException(e);
+        }
+        
+    }
+    
+}
+```
+```java
+*트랜잭션 프록시 적용 후 서비스 코드 예시*
+
+public class Service {
+    public void logic() {
+        //트랜잭션 관련 코드 제거, 순수 비즈니스 로직만 남음
+        bizLogic(fromId, toId, money);
+    }
+}
+```
+<br/>
+
+#### 프록시 도입 전/후 비교
+- `도입 전`: 서비스에 비즈니스 로직과 트랜잭션 처리 로직이 섞여 있음
+- `도입 후`: 트랜잭션 프록시가 트랜잭션 처리 로직을 모두 가져감
+  - `트랜잭션 프록시`: 트랜잭션 시작 -> 호출 역할을 서비스 대신해줌
+  - 덕분에 서비스 계층에는 순수한 비즈니스 로직만 남게됨  
+<br/>
+
+### 스프링이 제공하는 트랜잭션 AOP
+- 스프링이 제공하는 AOP 기능을 사용하면 굉장히 편리하게 프록시를 적용할 수 있음
+- 트랜잭션은 매우 즁요하고 전세계 누구나 사용하는 기능이므로 스프링은 AOP 처리를 위한 모든 기능을 제공해줌
+- 개발자는 트랜잭션 처리가 필요한 곳에 `@Transactional` 애노테이션만 붙여주면 됨
+  - 이 애노테이션을 스프링 트랜잭션 AOP 가 인식해 트랜잭션 프록시를 적용해줌
+  - `@Transactional`: `org.springframework.transaction.annotation.Transactional`
