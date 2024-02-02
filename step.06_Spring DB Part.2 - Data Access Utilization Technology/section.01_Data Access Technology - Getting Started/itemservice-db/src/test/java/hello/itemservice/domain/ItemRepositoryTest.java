@@ -19,9 +19,11 @@ class ItemRepositoryTest {
     @Autowired
     ItemRepository itemRepository;
 
-    @AfterEach
+    // 각 테스트는 서로 영향이 없어야 하기에 각 테스트 별로 테스트 종료시 저장 데이터를 제거
+    @AfterEach  // 각 테스트 실행 종료 시점에 호출
     void afterEach() {
-        //MemoryItemRepository 의 경우 제한적으로 사용
+        // MemoryItemRepository 의 경우 제한적으로 사용
+        // 인터페이스에 `clearStore()`가 없으므로 `MemoryItemRepository`인 경우에만 다운 캐스팅을 통해 데이터를 초기화
         if (itemRepository instanceof MemoryItemRepository) {
             ((MemoryItemRepository) itemRepository).clearStore();
         }
