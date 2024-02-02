@@ -34,6 +34,7 @@ public class ItemServiceApplication {
 		return new TestDataInit(itemRepository);
 	}
 
+	/*
 	@Bean
 	@Profile("test")	// 테스트 프로필일 경우에만 데이터소스를 스프링 빈으로 등록함
 	public DataSource dataSource() {
@@ -45,4 +46,5 @@ public class ItemServiceApplication {
 		dataSource.setPassword("");
 		return dataSource;
 	}
+	*/
 }

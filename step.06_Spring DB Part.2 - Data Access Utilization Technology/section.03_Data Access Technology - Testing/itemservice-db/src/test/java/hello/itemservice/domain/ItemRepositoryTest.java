@@ -20,7 +20,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 // @SpringBootApplication 을 찾아서 설정으로 사용함 -> 테스트도 JdbcTemplate 을 통해 실제 DB를 호출하게 됨
-@Transactional  // 테스트에서 사용시 -> 테스트가 끝나면 자동으로 트랜잭션을 롤백시켜버림
+@Transactional  // 테스트에서 사용시 -> 테스트가 끝나면 자동으로 트랜잭션을 롤백시켜버림, 반복적인 테스트를 가능케 함
 @SpringBootTest
 class ItemRepositoryTest {
 
