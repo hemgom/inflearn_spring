@@ -2,6 +2,7 @@ package hello.itemservice.repository;
 
 import lombok.Data;
 
+// 검색 조건 (Condition -> cond)
 @Data
 public class ItemSearchCond {
 

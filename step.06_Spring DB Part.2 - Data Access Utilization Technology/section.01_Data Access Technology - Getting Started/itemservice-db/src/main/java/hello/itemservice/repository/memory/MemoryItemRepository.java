@@ -10,6 +10,7 @@ import org.springframework.util.ObjectUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// `ItemRepository` 구현체 클래스
 @Repository
 public class MemoryItemRepository implements ItemRepository {
 
@@ -36,6 +37,7 @@ public class MemoryItemRepository implements ItemRepository {
         return Optional.ofNullable(store.get(id));
     }
 
+    // 검색 조건을 받아 내부에서 데이터를 검색하는 기능을 함
     @Override
     public List<Item> findAll(ItemSearchCond cond) {
         String itemName = cond.getItemName();
@@ -55,6 +57,8 @@ public class MemoryItemRepository implements ItemRepository {
                 .collect(Collectors.toList());
     }
 
+    
+    // 데이터 중복을 막기 위해 테스트용으로 사용하는 메서드
     public void clearStore() {
         store.clear();
     }

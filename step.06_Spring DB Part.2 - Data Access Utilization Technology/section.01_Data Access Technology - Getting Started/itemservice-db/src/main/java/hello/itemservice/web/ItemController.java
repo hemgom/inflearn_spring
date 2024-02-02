@@ -12,6 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+// 상품 CRUD 컨트롤러
 @Controller
 @RequestMapping("/items")
 @RequiredArgsConstructor

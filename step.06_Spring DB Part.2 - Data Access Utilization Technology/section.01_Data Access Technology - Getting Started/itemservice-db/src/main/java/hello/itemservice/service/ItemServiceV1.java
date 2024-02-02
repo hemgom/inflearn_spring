@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+
+// `ItemService` 의 구현체 클래스로 대부분 기능을 `Repository` 에 위임
 @Service
 @RequiredArgsConstructor
 public class ItemServiceV1 implements ItemService {
