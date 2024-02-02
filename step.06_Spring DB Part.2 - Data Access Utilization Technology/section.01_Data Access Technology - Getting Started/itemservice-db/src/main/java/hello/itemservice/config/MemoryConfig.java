@@ -7,6 +7,10 @@ import hello.itemservice.service.ItemServiceV1;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ *`ItemServiceV1`과 `MemoryItemRepository`를 스프링 빈으로 등록, 생성자를 통해 의존관계 주입
+ * 편리하게 구현체를 변경하려고 수동으로 빈 등록
+  */
 @Configuration
 public class MemoryConfig {
 
