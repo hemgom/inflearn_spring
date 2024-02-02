@@ -9,8 +9,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.List;
@@ -18,12 +20,14 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 // @SpringBootApplication 을 찾아서 설정으로 사용함 -> 테스트도 JdbcTemplate 을 통해 실제 DB를 호출하게 됨
+@Transactional  // 테스트에서 사용시 -> 테스트가 끝나면 자동으로 트랜잭션을 롤백시켜버림
 @SpringBootTest
 class ItemRepositoryTest {
 
     @Autowired
     ItemRepository itemRepository;
 
+/*
     @Autowired
     PlatformTransactionManager transactionManager;
     TransactionStatus status;
@@ -33,6 +37,7 @@ class ItemRepositoryTest {
         // 트랜잭션 시작
         status = transactionManager.getTransaction(new DefaultTransactionDefinition());
     }
+*/
 
     // 각 테스트는 서로 영향이 없어야 하기에 각 테스트 별로 테스트 종료시 저장 데이터를 제거
     @AfterEach  // 각 테스트 실행 종료 시점에 호출
@@ -44,9 +49,11 @@ class ItemRepositoryTest {
         }
 
         // 트랜잭션 롤백
-        transactionManager.rollback(status);
+        //transactionManager.rollback(status);
     }
 
+    //@Commit   // 테스트 코드에서 커밋을 하고 싶을 경우 사용하는 애노테이션 (or @Rollback(false)를 사용)
+    //@Transactional
     @Test
     void save() {
         //given
