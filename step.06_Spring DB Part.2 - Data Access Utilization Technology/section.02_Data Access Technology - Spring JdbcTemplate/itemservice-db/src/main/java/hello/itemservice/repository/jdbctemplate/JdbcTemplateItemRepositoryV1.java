@@ -83,7 +83,8 @@ public class JdbcTemplateItemRepositoryV1 implements ItemRepository {
             Item item = new Item();
             item.setId(rs.getLong("id"));
             item.setItemName(rs.getString("item_Name"));
-            item.setPrice(rs.getInt("quantity"));
+            item.setPrice(rs.getInt("price"));
+            item.setQuantity(rs.getInt("quantity"));
             return item;
         });
     }
@@ -96,7 +97,7 @@ public class JdbcTemplateItemRepositoryV1 implements ItemRepository {
 
         String sql = "select id, item_name, price, quantity from item";
 
-        // 동적 쿼리
+        // 동적 쿼리 - 사용자가 검색하는 값에 따라 실행되는 SQL 이 동적으로 달라져야 함
         if (StringUtils.hasText(itemName) || maxPrice != null) {
             sql += " where";
         }
