@@ -31,6 +31,11 @@ public class JpaItemRepository implements ItemRepository {
         return item;
     }
 
+    /**
+     * `update()` 메서드 호출이 필요 없음
+     * JPA 는 트랜잭션이 커밋되는 시점에 변경된 엔티티 객체가 있는지 확인 -> 변경된 엔티티 객체가 확인되면 `UPDATE SQL`을 알아서 실행함
+     * JPA 내부 원리로 인해 변경된 엔티티 객체를 구별(식별)함
+     */
     @Override
     public void update(Long itemId, ItemUpdateDto updateParam) {
         Item findItem = em.find(Item.class, itemId);
