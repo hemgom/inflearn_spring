@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@Repository
+@Repository // 컴포넌트 스캔의 대상이 됨, 예외 변환 AOP 적용 대상이 됨 = 스프링이 예외변환 처리 AOP 를 만들어줌
 @Transactional
 public class JpaItemRepository implements ItemRepository {
 

@@ -4,6 +4,7 @@ import hello.itemservice.repository.ItemRepository;
 import hello.itemservice.repository.ItemSearchCond;
 import hello.itemservice.repository.ItemUpdateDto;
 import hello.itemservice.repository.memory.MemoryItemRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 // @SpringBootApplication 을 찾아서 설정으로 사용함 -> 테스트도 JdbcTemplate 을 통해 실제 DB를 호출하게 됨
 @Transactional  // 테스트에서 사용시 -> 테스트가 끝나면 자동으로 트랜잭션을 롤백시켜버림, 반복적인 테스트를 가능케 함
 @SpringBootTest
+@Slf4j
 class ItemRepositoryTest {
 
     @Autowired
@@ -92,6 +94,7 @@ class ItemRepositoryTest {
         Item item2 = new Item("itemA-2", 20000, 20);
         Item item3 = new Item("itemB-1", 30000, 30);
 
+        log.info("repository={}", itemRepository.getClass());   // 스프링이 예외변환 처리 AOP 를 생성하는지 확인
         itemRepository.save(item1);
         itemRepository.save(item2);
         itemRepository.save(item3);
