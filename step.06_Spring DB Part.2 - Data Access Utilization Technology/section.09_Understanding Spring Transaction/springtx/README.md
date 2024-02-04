@@ -65,4 +65,78 @@ public interface PlatformTransactionManager extends TransactionManager {
 ### 스프링이 제공하는 트랜잭션 AOP
 - 트랜잭션은 중요도도 높고 전 세계적으로 누구나 사용하기에 스프링은 `트랜잭션 AOP`를 처리하기 위한 모든 기능을 제공함
   - 스프링 부트 사용시 `트랜잭션 AOP`를 처리하기 위한 스프링 빈들을 자동으로 등록해줌
-- 개발자는 `@Transactional` 애노테이션만 필요한 로직에 선언해주면 됨
+- 개발자는 `@Transactional` 애노테이션만 필요한 로직에 선언해주면 됨  
+<br/><br/><br/>
+
+## 08. 트랜잭션 옵션 소개
+### @Transactional - 코드
+```java
+public @interface Transactional {
+    
+    String value() default "";
+    String transactionManager() default "";
+
+    Class<? extends Throwable>[] rollbackFor() default {};
+    Class<? extends Throwable>[] noRollbackFor() default {};
+
+    Propagation propagation() default Propagation.REQUIRED;
+    Isolation isolation() default Isolation.DEFAULT;
+    int timeout() default TransactionDefinition.TIMEOUT_DEFAULT;
+    boolean readOnly() default false;
+    String[] label() default {};
+    
+}
+```
+#### value, transactionManager
+`트랜잭션 매니저` 지정시 사용하는 옵션
+- 둘 중 하나에 트랜잭션 매니저의 `스프링 빈의 이름`을 적어주면 됨
+- 이름 생략시 기본으로 등록된 트랜잭션 매니저를 사용함 (대부분 생략함)
+- 사용하는 트랜잭션 매니저가 둘 이상이라면 트랜잭션 매니저의 이름을 지정해 구분하는 용도로 사용함  
+<br/>
+
+#### rollbackFor
+예외 발생시 `스프링 트랜잭션의 기본 정책`은 아래와 같음
+- `언체크 예외(RuntimeException, Error)`와 그 하위 예외가 발생할 경우 `롤백`
+- `체크 예외(Exception)`와 그 하위 예외가 발생할 경우 `커밋`
+<br/>
+
+`rollbackFor` 옵션을 사용하면 특정 예외 발생시 롤백을 지정할 수 있음
+- ex) `@Transactional(rollbackFor = Exception.class)`  
+<br/>
+
+#### noRollbackFor
+`rollbackFor`와 반대의 기능을 함, 특정 예외 발생시 롤백을 금지할 수 있음  
+<br/>
+
+#### propagation
+`트랜잭션 전파`에 관한 옵션  
+<br/>
+
+#### isolation
+`트랜잭션 격리 수준`을 지정하는 옵션
+- `DEFAULT`: 데이터베이스에서 설정한 격리 수준을 따름
+- `READ_UNCOMMITTED`: 커밋되지 않은 읽기
+- `READ_COMMITTED`: 커밋된 읽기
+- `REPEATABLE_READ`: 반복 가능한 읽기
+- `SERIALIZABLE`: 직렬화 가능  
+<br/>
+
+#### timeout
+트랜잭션 `수행 시간`에 대한 `타임아웃을 초 단위로 지정`하는 옵션
+- 기본 값은 `트랜잭션 시스템의 타임아웃`
+- 운영 환경에 따라 동작 여부가 결정 될 수 있음  
+<br/>
+
+#### readOnly
+트랜잭션은 기본적으로 읽기/쓰기가 모두 가능하도록 생성이 되는데, `readOnly = true`를 사용하면 읽기 전용 트랜잭션이 생성됨
+- 읽기 전용 트랜잭션의 경우 `등록, 수정, 삭제`가 되지 않음 (읽기 기능만 동작)
+- 단, 드라이버나 DB 에 따라 정상 동작하지 않을 수 있음
+- 크게 3곳에서 적용됨
+  - 프레임 워크
+    - `JdbcTemplate`인 읽기 전용 트랜잭션 안에서 변경 기능을 실행하면 예외를 던짐
+    - `JPA(하이버네이트)`는 읽기 전용 트랜잭션의 경우 커밋 시점에 `플러시`를 호출하지 않음
+  - JDBC 드라이버
+    - 읽기 전용 트랜잭션에서 변경 쿼리 발생시 예외를 던짐
+    - 읽기/쓰기 DB 를 구분해 요청함
+  - DB
+    - DB 에 따라 읽기 전용 트랜잭션의 경우 읽기만 하면 되므로 내부에서 성능 최적화가 발생
