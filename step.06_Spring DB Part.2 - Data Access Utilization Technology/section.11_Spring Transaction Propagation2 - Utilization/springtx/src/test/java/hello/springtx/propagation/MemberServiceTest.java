@@ -72,7 +72,28 @@ class MemberServiceTest {
     void singleTx() {   // MemberService 시작~종료까지의 모든 로직을 하나의 트랜잭션으로 묶음
 
         //given
-        String username = "outerTxOff_success";
+        String username = "singleTx";
+
+        //when
+        memberService.joinV1(username);
+
+        //then : 모든 데이터가 정상 저장된다.
+        assertTrue(memberRepository.find(username).isPresent());
+        assertTrue(logRepository.find(username).isPresent());
+
+    }
+
+    /**
+     * Transactional 여부
+     * memberService - ON
+     * memberRepository - ON
+     * logRepository - ON
+     */
+    @Test
+    void outerTxOn_success() {
+
+        //given
+        String username = "outerTxOn_success";
 
         //when
         memberService.joinV1(username);
