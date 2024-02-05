@@ -117,7 +117,7 @@ class MemberServiceTest {
         //given
         String username = "로그예외_outerTxOn_fail";
 
-        //when : 런타임 예외가 클라이언트까지 던져져 물리 트랜잭션에서도 물리 롤백이 수행된다.
+        //when : 런타임 예외가 클라이언트까지 던져져 물리 트랜잭션에서도 물리 롤백을 요청한다.
         assertThatThrownBy(() -> memberService.joinV1(username))
                 .isInstanceOf(RuntimeException.class);
 
@@ -148,6 +148,27 @@ class MemberServiceTest {
         //then : 모든 데이터가 롤백 된다.
         assertTrue(memberRepository.find(username).isEmpty());  // 커밋이 될 것 같지만 rollback-only 설정으로 롤백
         assertTrue(logRepository.find(username).isEmpty());     // rollback-only 설정으로 인한 롤백
+
+    }
+
+    /**
+     * Transactional 여부
+     * memberService - ON
+     * memberRepository - ON
+     * logRepository - ON(REQUIRES_NEW) <- Exception
+     */
+    @Test
+    void recoverException_success() {
+
+        //given
+        String username = "로그예외_recoverException_success";
+
+        //when
+        memberService.joinV2(username);
+
+        //then : member 저장(커밋), log 롤백
+        assertTrue(memberRepository.find(username).isPresent());    // 기존 MemberService 트랜잭션에 참여
+        assertTrue(logRepository.find(username).isEmpty());         // 신규 트랜잭션이므로 자체 물리 롤백을 실행
 
     }
 
