@@ -56,7 +56,7 @@ class MemberServiceTest {
         assertThatThrownBy(() -> memberService.joinV1(username))
                 .isInstanceOf(RuntimeException.class);
 
-        //then : 모든 데이터가 정상 저장된다.
+        //then : log 데이터는 롤백 된다.
         assertTrue(memberRepository.find(username).isPresent());    // 커밋
         assertTrue(logRepository.find(username).isEmpty());         // 롤백 - 예외 발생
 
@@ -101,6 +101,28 @@ class MemberServiceTest {
         //then : 모든 데이터가 정상 저장된다.
         assertTrue(memberRepository.find(username).isPresent());
         assertTrue(logRepository.find(username).isPresent());
+
+    }
+
+    /**
+     * Transactional 여부
+     * memberService - ON
+     * memberRepository - ON
+     * logRepository - ON <- Exception
+     */
+    @Test
+    void outerTxOn_fail() {
+
+        //given
+        String username = "로그예외_outerTxOn_fail";
+
+        //when : 런타임 예외가 클라이언트까지 던져져 물리 트랜잭션에서도 물리 롤백이 수행된다.
+        assertThatThrownBy(() -> memberService.joinV1(username))
+                .isInstanceOf(RuntimeException.class);
+
+        //then : 모든 데이터가 롤백 된다.
+        assertTrue(memberRepository.find(username).isEmpty());
+        assertTrue(logRepository.find(username).isEmpty());
 
     }
 
